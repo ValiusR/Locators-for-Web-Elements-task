@@ -320,17 +320,7 @@ namespace Locators_for_Web_Elements
 
             bool allContainKeyword = home.AllResultsContainKeyword(searchKeyword);
             Assert.True(allContainKeyword, $"Not all search results contained the keyword: {searchKeyword}");
-        }
-        private string WaitForFileDownload(string partialFileName, int timeoutSeconds = 30)
-        {
-            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(timeoutSeconds));
-            return wait.Until(d =>
-            {
-                var file = Directory.GetFiles(downloadPath)
-                    .FirstOrDefault(f => Path.GetFileName(f).Contains(partialFileName));
-                return file;
-            })!;
-        }
+        }      
 
         [Theory]
         [InlineData("Code-Of-Conduct")]
@@ -362,6 +352,16 @@ namespace Locators_for_Web_Elements
             string detailTitle = insights.GetArticleDetailTitle();
 
             Assert.Equal(articleTitle, detailTitle);
+        }
+        private string WaitForFileDownload(string partialFileName, int timeoutSeconds = 30)
+        {
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(timeoutSeconds));
+            return wait.Until(d =>
+            {
+                var file = Directory.GetFiles(downloadPath)
+                    .FirstOrDefault(f => Path.GetFileName(f).Contains(partialFileName));
+                return file;
+            })!;
         }
     }
 }
