@@ -26,6 +26,8 @@ namespace Locators_for_Web_Elements
             var options = new ChromeOptions();
             var userDataDir = Path.Combine(Path.GetTempPath(), "epam-chrome-profile");
             options.AddArgument($"--user-data-dir={userDataDir}");
+            options.AddArgument("--disable-infobars");
+            options.AddUserProfilePreference("intl.accept_languages", "en-US");
 
             driver = new ChromeDriver(options);
             driver.Manage().Window.Maximize();
@@ -41,46 +43,7 @@ namespace Locators_for_Web_Elements
         {
             driver?.Quit();
         }
-
-        /// <summary>
-        /// Dismisses the OneTrust cookie consent banner by setting cookies 
-        /// </summary>
-        private void DismissOneTrust()
-        {
-            try
-            {
-                if (driver is ChromeDriver chrome)
-                {
-                    var cookies = new Dictionary<string, object?>[]
-                    {
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "OptanonAlertBoxClosed",
-                            ["value"] = "true",
-                            ["domain"] = ".epam.com",
-                            ["path"] = "/"
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "onetrust-consent-sent",
-                            ["value"] = "true",
-                            ["domain"] = ".epam.com",
-                            ["path"] = "/"
-                        }
-                    };
-
-                    foreach (var cookie in cookies)
-                    {
-                        chrome.ExecuteCdpCommand("Network.setCookie", cookie);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"DismissOneTrust failed: {ex.Message}");
-            }
-        }
-
+        
         [Theory]
         [InlineData("JavaScript", "United States")]
         [InlineData("Java", "Lithuania")]
@@ -111,6 +74,11 @@ namespace Locators_for_Web_Elements
             keywordInput.SendKeys(keyword);
 
             wait.Until(d => d.FindElement(By.CssSelector("label[for^='checkbox-vacancy_type-Remote']:not([disabled])"))).Click();
+
+            wait.Until(d => {
+                var preloaders = d.FindElements(By.CssSelector("[class^='Preloader_fullSize']"));
+                return preloaders.Count == 0 || !preloaders[0].Displayed;
+            });
 
             // submit search
             IWebElement searchButton = driver.FindElement(By.Name("submit_search_box_button"));
@@ -172,22 +140,59 @@ namespace Locators_for_Web_Elements
             IWebElement findButton = driver.FindElement(By.CssSelector("button.custom-search-button"));
             findButton.Click();
 
-            //  wait for results to populate 
-            // (implicit wait doesn't help because the list updatess without refreshing the page)
-            var resultLinks = wait.Until(d => {
-                var links = d.FindElements(By.XPath("//a[@class='search-results__title-link']/parent::h3"));
-                return links.Count > 0 ? links : null;
+            var resultItems = wait.Until(d => {
+                var items = d.FindElements(By.ClassName("search-results__item"));
+                return items.Count > 0 ? items : null;
             });
 
-            bool allContainKeyword = resultLinks
-                .Select(link => link.Text)
-                .All(text => text.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase));
+            bool allContainKeyword = resultItems
+            .Select(item => item.Text)
+            .All(fullCardText => fullCardText.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase));
 
-            var titles = resultLinks.Select(link => link.Text).ToList();
+            var titles = resultItems.Select(link => link.Text).ToList();
 
             Debug.WriteLine(string.Join(Environment.NewLine, titles));
 
             Assert.True(allContainKeyword, $"Not all search results contained the keyword: {searchKeyword}");
         }
+        /// <summary>
+        /// Dismisses the OneTrust cookie consent banner by setting cookies 
+        /// </summary>
+        private void DismissOneTrust()
+        {
+            try
+            {
+                if (driver is ChromeDriver chrome)
+                {
+                    var cookies = new Dictionary<string, object?>[]
+                    {
+                        new Dictionary<string, object?>
+                        {
+                            ["name"] = "OptanonAlertBoxClosed",
+                            ["value"] = "true",
+                            ["domain"] = ".epam.com",
+                            ["path"] = "/"
+                        },
+                        new Dictionary<string, object?>
+                        {
+                            ["name"] = "onetrust-consent-sent",
+                            ["value"] = "true",
+                            ["domain"] = ".epam.com",
+                            ["path"] = "/"
+                        }
+                    };
+
+                    foreach (var cookie in cookies)
+                    {
+                        chrome.ExecuteCdpCommand("Network.setCookie", cookie);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"DismissOneTrust failed: {ex.Message}");
+            }
+        }
+
     }
 }
