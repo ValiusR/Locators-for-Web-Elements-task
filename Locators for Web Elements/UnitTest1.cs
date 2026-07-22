@@ -347,7 +347,7 @@ namespace Locators_for_Web_Elements
         }
 
         [Theory]
-        [InlineData(2)] // different swipe counts to test different articles in the carousel
+        [InlineData(2)]
         [InlineData(3)]
         public void Task4_ValidateCarouselArticleTitle(int swipeCount)
         {
