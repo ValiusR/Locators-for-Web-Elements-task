@@ -5,14 +5,243 @@ using OpenQA.Selenium.Support.UI;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 using System.Diagnostics;
+using System.IO;
+using System.Threading;
 
 namespace Locators_for_Web_Elements
 {
+    public class BasePage
+    {
+        protected readonly IWebDriver Driver;
+        protected readonly WebDriverWait Wait;
+        protected readonly Actions Actions;
+
+        public BasePage(IWebDriver driver)
+        {
+            Driver = driver;
+            Wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            Wait.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
+            Actions = new Actions(driver);
+        }
+
+        public void DismissOneTrust()
+        {
+            try
+            {
+                if (Driver is ChromeDriver chrome)
+                {
+                    var cookieNames = new[] { "OptanonAlertBoxClosed", "onetrust-consent-sent" };
+                    foreach (var name in cookieNames)
+                    {
+                        chrome.ExecuteCdpCommand("Network.setCookie", new Dictionary<string, object?>
+                        {
+                            ["name"] = name,
+                            ["value"] = "true",
+                            ["domain"] = ".epam.com",
+                            ["path"] = "/"
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"DismissOneTrust failed: {ex.Message}");
+            }
+        }
+    }
+
+    public class EpamHomePage : BasePage
+    {
+        public EpamHomePage(IWebDriver driver) : base(driver) { }
+
+        public void NavigateTo(string? baseUrl)
+        {
+            Driver.Navigate().GoToUrl(baseUrl!);
+        }
+
+        public void ClickCareersLink()
+        {
+            Wait.Until(d => d.FindElement(By.LinkText("Careers"))).Click();
+        }
+
+        public void OpenGlobalSearch()
+        {
+            Wait.Until(d => d.FindElement(By.XPath("//button[contains(@class, 'header-search__button')]"))).Click();
+        }
+
+        public void EnterSearchKeyword(string keyword)
+        {
+            var searchInput = Wait.Until(d => d.FindElement(By.Id("new_form_search")));
+            searchInput.Click();
+            searchInput.SendKeys(keyword);
+        }
+
+        public void ClickSearchButton()
+        {
+            Driver.FindElement(By.CssSelector("button.custom-search-button")).Click();
+        }
+
+        public IList<IWebElement> GetSearchResultItems()
+        {
+            return Wait.Until(d =>
+            {
+                var items = d.FindElements(By.ClassName("search-results__item"));
+                return items.Count > 0 ? items : null;
+            })!;
+        }
+
+        public bool AllResultsContainKeyword(string keyword)
+        {
+            return GetSearchResultItems()
+                .All(item => item.Text.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public void ScrollToFooter()
+        {
+            var footer = Wait.Until(d => d.FindElement(By.TagName("footer")));
+            Actions.ScrollToElement(footer).Perform();
+        }
+
+        public void ClickPolicyPdfLink(string fileName)
+        {
+            var pdfLink = Wait.Until(d => d.FindElement(By.CssSelector(".policies-right a[href*='" + fileName + "']")));
+            Actions.ScrollToElement(pdfLink).Perform();
+            Wait.Until(d => pdfLink.Displayed);
+            pdfLink.Click();
+        }
+    }
+
+    public class CareersSearchPage : BasePage
+    {
+        public CareersSearchPage(IWebDriver driver) : base(driver) { }
+
+        public void OpenJobSearchForm()
+        {
+            Wait.Until(d => d.FindElement(By.CssSelector("[data-gtm-category='job_search_redirect'] a.button-body"))).Click();
+        }
+
+        public void SelectCountry(string country)
+        {
+            var locationInput = Wait.Until(d => d.FindElement(By.CssSelector("input[aria-label='Choose your country']")));
+            locationInput.Click();
+            locationInput.SendKeys(country + Keys.Enter);
+        }
+
+        public void WaitForPreloaderToDisappear()
+        {
+            Wait.Until(d =>
+            {
+                var preloaders = d.FindElements(By.CssSelector("[class^='Preloader_fullSize']"));
+                return preloaders.Count == 0 || !preloaders[0].Displayed;
+            });
+        }
+
+        public void EnterKeyword(string keyword)
+        {
+            var keywordInput = Driver.FindElement(By.CssSelector("[data-testid='search-input']"));
+            keywordInput.Clear();
+            keywordInput.SendKeys(keyword);
+        }
+
+        public void EnableFilter(string filterName)
+        {
+            Wait.Until(d => d.FindElement(By.CssSelector("label[for^='checkbox-vacancy_type-" + filterName + "']:not([disabled])"))).Click();
+        }
+
+        public void SubmitSearch()
+        {
+            var searchButton = Driver.FindElement(By.Name("submit_search_box_button"));
+            var urlBefore = Driver.Url;
+            searchButton.Click();
+            Wait.Until(d => d.Url != urlBefore);
+        }
+
+        public void ClickLastJobCard()
+        {
+            var urlBefore = Driver.Url;
+            Wait.Until(d =>
+            {
+                try
+                {
+                    var jobCards = d.FindElements(By.CssSelector("[data-testid='accordion-section-container']"));
+                    if (jobCards.Count == 0) return false;
+
+                    var jobLink = jobCards.Last().FindElement(By.CssSelector("a[data-testid='job-card-link']"));
+                    Actions.ScrollToElement(jobLink).MoveToElement(jobLink).Click().Perform();
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            });
+            Wait.Until(d => d.Url != urlBefore);
+        }
+
+        public string GetPageBodyText()
+        {
+            return Wait.Until(d => d.FindElement(By.TagName("body")).Text);
+        }
+    }
+
+    public class InsightsPage : BasePage
+    {
+    public InsightsPage(IWebDriver driver) : base(driver) { }
+
+    public void OpenInsights()
+    {
+        Wait.Until(d => d.FindElement(By.CssSelector(".top-navigation__item.epam a.top-navigation__item-link[href='/insights']"))).Click();
+    }
+
+        public void SwipeCarousel(int times)
+        {
+            var slider = Wait.Until(d => d.FindElement(By.CssSelector(".slider-ui-23[data-configuration='text-and-image-in-two-columns']")));
+            Actions.ScrollToElement(slider).Perform();
+
+            var nextButton = Wait.Until(d => slider.FindElement(By.CssSelector(".slider__right-arrow.slider-navigation-arrow")));
+
+            for (int i = 0; i < times; i++)
+            {
+                nextButton.Click();
+                Thread.Sleep(1000);
+            }
+        }
+
+        public string GetCurrentArticleTitle()
+        {
+            var activeSlide = Wait.Until(d =>
+            {
+                var slides = d.FindElements(By.CssSelector(".slider-ui-23[data-configuration='text-and-image-in-two-columns'] .owl-item.active:not(.cloned)"));
+                return slides.Count > 0 ? slides[0] : null;
+            });
+
+            return activeSlide.FindElement(By.CssSelector(".single-slide__content .font-size-44")).Text;
+        }
+
+        public void ClickReadMore()
+        {
+            var readMoreHref = Wait.Until(d =>
+            {
+                var activeSlide = d.FindElement(By.CssSelector(".slider-ui-23[data-configuration='text-and-image-in-two-columns'] .owl-item.active:not(.cloned)"));
+                var link = activeSlide.FindElement(By.CssSelector(".slider-cta-link"));
+                return link.GetAttribute("href");
+            });
+
+            Driver.Navigate().GoToUrl(readMoreHref);
+        }
+
+        public string GetArticleDetailTitle()
+        {
+            return Wait.Until(d => d.FindElement(By.CssSelector(".header_and_download h1"))).Text;
+        }
+    }
+
     public class EpamTests : IDisposable
     {
         private readonly IWebDriver driver;
         private readonly WebDriverWait wait;
-        private readonly string baseUrl;
+        private readonly string? baseUrl;
+        private readonly string downloadPath;
 
         public EpamTests()
         {
@@ -22,12 +251,19 @@ namespace Locators_for_Web_Elements
                 .Build();
 
             baseUrl = config["BaseUrl"];
+            downloadPath = Path.Combine(Path.GetTempPath(), "epam-downloads");
+            Directory.CreateDirectory(downloadPath);
 
             var options = new ChromeOptions();
             var userDataDir = Path.Combine(Path.GetTempPath(), "epam-chrome-profile");
             options.AddArgument($"--user-data-dir={userDataDir}");
             options.AddArgument("--disable-infobars");
             options.AddUserProfilePreference("intl.accept_languages", "en-US");
+
+            options.AddUserProfilePreference("download.prompt_for_download", false);
+            options.AddUserProfilePreference("download.default_directory", downloadPath);
+            options.AddUserProfilePreference("download.directory_upgrade", true);
+            options.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
 
             driver = new ChromeDriver(options);
             driver.Manage().Window.Maximize();
@@ -36,163 +272,96 @@ namespace Locators_for_Web_Elements
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             wait.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
 
-            driver.Navigate().GoToUrl(baseUrl);
+            new BasePage(driver).DismissOneTrust();
+            driver.Navigate().GoToUrl(baseUrl!);
         }
 
         public void Dispose()
         {
             driver?.Quit();
         }
-        
+
         [Theory]
         [InlineData("JavaScript", "United States")]
         [InlineData("Java", "Lithuania")]
         public void Task1_ValidatePositionSearch(string keyword, string country)
         {
-            // navigate to search page
-            wait.Until(d => d.FindElement(By.LinkText("Careers"))).Click();
-            wait.Until(d => d.FindElement(By.CssSelector("[data-gtm-category='job_search_redirect'] a.button-body"))).Click();
-            DismissOneTrust();
+            var home = new EpamHomePage(driver);
+            var careersPage = new CareersSearchPage(driver);
 
-            // select country dropdown
-            IWebElement locationInput = wait.Until(d => d.FindElement(By.CssSelector("input[aria-label='Choose your country']")));
+            home.ClickCareersLink();
+            careersPage.OpenJobSearchForm();
+            careersPage.DismissOneTrust();
+            
+            careersPage.SelectCountry(country);
+            careersPage.WaitForPreloaderToDisappear();
+            careersPage.EnterKeyword(keyword);
+            careersPage.EnableFilter("Remote");
+            careersPage.WaitForPreloaderToDisappear();
+            careersPage.SubmitSearch();
+            careersPage.ClickLastJobCard();
 
-            locationInput.Click();
-
-            // send the country name and hit enter to lock in autocomplete choice
-            locationInput.SendKeys(country + Keys.Enter);
-
-            // wait for preloader to vanish
-            wait.Until(d => {
-                var preloaders = d.FindElements(By.CssSelector("[class^='Preloader_fullSize']"));
-                return preloaders.Count == 0 || !preloaders[0].Displayed;
-            });
-
-            // input keyword (programming language)
-            IWebElement keywordInput = driver.FindElement(By.CssSelector("[data-testid='search-input']"));
-            keywordInput.Clear();
-            keywordInput.SendKeys(keyword);
-
-            wait.Until(d => d.FindElement(By.CssSelector("label[for^='checkbox-vacancy_type-Remote']:not([disabled])"))).Click();
-
-            wait.Until(d => {
-                var preloaders = d.FindElements(By.CssSelector("[class^='Preloader_fullSize']"));
-                return preloaders.Count == 0 || !preloaders[0].Displayed;
-            });
-
-            // submit search
-            IWebElement searchButton = driver.FindElement(By.Name("submit_search_box_button"));
-            string urlBeforeClick = driver.Url;
-
-            searchButton.Click();
-            wait.Until(d => d.Url != urlBeforeClick);
-
-            wait.Until(d => {
-                try
-                {
-                    // I know it's really bad to use classname here considering the css module hashes will
-                    // change (cssSelector would be better that search class^='JobCard')
-                    // but I didn't find another good place to use ClassName and I want to fulfill all the requirements
-                    var jobCards = d.FindElements(By.ClassName("JobCard_panel__gTD7e"));
-                    if (jobCards.Count == 0) return false;
-
-                    var jobLink = jobCards.Last().FindElement(By.CssSelector("a[data-testid='job-card-link']"));
-
-                    new Actions(d).MoveToElement(jobLink).Click().Perform();
-                    return true;
-                }
-                catch (Exception)
-                {
-                    return false; // retry if anything gets intercepted
-                }
-            });
-
-            wait.Until(d => d.Url != urlBeforeClick);
-
-            // extract and check text
-            string finalPageText = wait.Until(d => {
-                return d.FindElement(By.TagName("body")).Text;
-            });
-
-            Assert.Contains(keyword, finalPageText, StringComparison.OrdinalIgnoreCase);
+            string pageText = careersPage.GetPageBodyText();
+            Assert.Contains(keyword, pageText, StringComparison.OrdinalIgnoreCase);
         }
-    
+
         [Theory]
         [InlineData("BLOCKCHAIN")]
         [InlineData("Cloud")]
         [InlineData("Automation")]
         public void Task2_ValidateGlobalSearch(string searchKeyword)
         {
-            DismissOneTrust();
+            var home = new EpamHomePage(driver);
 
-            IWebElement searchIcon = driver.FindElement(By.XPath("//button[contains(@class, 'header-search__button')]"));
-            searchIcon.Click();
+            home.DismissOneTrust();
+            home.OpenGlobalSearch();
+            home.EnterSearchKeyword(searchKeyword);
+            home.ClickSearchButton();
 
-            IWebElement globalSearchInput = wait.Until(d =>
-            {
-                return d.FindElement(By.Id("new_form_search"));
-            });
-
-            globalSearchInput.Click();
-
-            globalSearchInput.SendKeys(searchKeyword);
-
-            IWebElement findButton = driver.FindElement(By.CssSelector("button.custom-search-button"));
-            findButton.Click();
-
-            var resultItems = wait.Until(d => {
-                var items = d.FindElements(By.ClassName("search-results__item"));
-                return items.Count > 0 ? items : null;
-            });
-
-            bool allContainKeyword = resultItems
-            .Select(item => item.Text)
-            .All(fullCardText => fullCardText.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase));
-
-            var titles = resultItems.Select(link => link.Text).ToList();
-
-            Debug.WriteLine(string.Join(Environment.NewLine, titles));
-
+            bool allContainKeyword = home.AllResultsContainKeyword(searchKeyword);
             Assert.True(allContainKeyword, $"Not all search results contained the keyword: {searchKeyword}");
         }
-        /// <summary>
-        /// Dismisses the OneTrust cookie consent banner by setting cookies 
-        /// </summary>
-        private void DismissOneTrust()
+        private string WaitForFileDownload(string partialFileName, int timeoutSeconds = 30)
         {
-            try
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(timeoutSeconds));
+            return wait.Until(d =>
             {
-                if (driver is ChromeDriver chrome)
-                {
-                    var cookies = new Dictionary<string, object?>[]
-                    {
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "OptanonAlertBoxClosed",
-                            ["value"] = "true",
-                            ["domain"] = ".epam.com",
-                            ["path"] = "/"
-                        },
-                        new Dictionary<string, object?>
-                        {
-                            ["name"] = "onetrust-consent-sent",
-                            ["value"] = "true",
-                            ["domain"] = ".epam.com",
-                            ["path"] = "/"
-                        }
-                    };
-
-                    foreach (var cookie in cookies)
-                    {
-                        chrome.ExecuteCdpCommand("Network.setCookie", cookie);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"DismissOneTrust failed: {ex.Message}");
-            }
+                var file = Directory.GetFiles(downloadPath)
+                    .FirstOrDefault(f => Path.GetFileName(f).Contains(partialFileName));
+                return file;
+            })!;
         }
 
+        [Theory]
+        [InlineData("Code-Of-Conduct")]
+        public void Task3_ValidateFileDownload(string partialFileName)
+        {
+            var home = new EpamHomePage(driver);
+
+            home.DismissOneTrust();
+            home.ScrollToFooter();
+            home.ClickPolicyPdfLink(partialFileName);
+
+            string filePath = WaitForFileDownload(partialFileName);
+            Assert.True(File.Exists(filePath), $"Downloaded file not found: {filePath}");
+        }
+
+        [Theory]
+        [InlineData(2)] // different swipe counts to test different articles in the carousel
+        [InlineData(3)]
+        public void Task4_ValidateCarouselArticleTitle(int swipeCount)
+        {
+            var home = new EpamHomePage(driver);
+            var insights = new InsightsPage(driver);
+
+            home.DismissOneTrust();
+            insights.OpenInsights();
+            insights.SwipeCarousel(swipeCount);
+            string articleTitle = insights.GetCurrentArticleTitle();
+            insights.ClickReadMore();
+            string detailTitle = insights.GetArticleDetailTitle();
+
+            Assert.Equal(articleTitle, detailTitle);
+        }
     }
 }
