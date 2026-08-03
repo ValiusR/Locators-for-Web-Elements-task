@@ -105,7 +105,7 @@ namespace Locators_for_Web_Elements
         public void ClickPolicyPdfLink(string fileName)
         {
             var pdfLink = Wait.Until(d => d.FindElement(By.CssSelector(".policies-right a[href*='" + fileName + "']")));
-            Actions.ScrollToElement(pdfLink).Perform();
+            ((IJavaScriptExecutor)Driver).ExecuteScript("arguments[0].scrollIntoView({block: 'center'});", pdfLink);
             Wait.Until(d => pdfLink.Displayed);
             pdfLink.Click();
         }
