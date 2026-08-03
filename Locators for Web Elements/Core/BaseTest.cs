@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Configuration;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 
 namespace Locators_for_Web_Elements.Core;
@@ -33,7 +32,7 @@ public abstract class BaseTest : IDisposable
         options.AddUserProfilePreference("download.directory_upgrade", true);
         options.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
 
-        Driver = new ChromeDriver(options);
+        Driver = BrowserFactory.Create(config["Browser"] ?? "Chrome", options);
         Driver.Manage().Window.Maximize();
         Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
 
