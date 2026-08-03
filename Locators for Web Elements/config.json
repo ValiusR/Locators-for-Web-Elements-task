@@ -1,3 +1,11 @@
 {
-  "BaseUrl": "https://www.epam.com/"
+  "BaseUrl": "https://www.epam.com/",
+  "Browser": "Chrome",
+  "Logging": {
+    "MinLevel": "Information",
+    "FilePath": "Logs/epam-taf-.log",
+    "ConsoleOutput": true,
+    "RetainedFileCountLimit": 7
+  },
+  "DownloadPath": "downloads"
 }
