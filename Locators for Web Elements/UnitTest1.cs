@@ -209,13 +209,16 @@ namespace Locators_for_Web_Elements
 
         public string GetCurrentArticleTitle()
         {
-            var activeSlide = Wait.Until(d =>
-            {
-                var slides = d.FindElements(By.CssSelector(".slider-ui-23[data-configuration='text-and-image-in-two-columns'] .owl-item.active:not(.cloned)"));
-                return slides.Count > 0 ? slides[0] : null;
-            });
+            var titleElement = Wait.Until(d =>
+                 d.FindElement(By.CssSelector(".slider-ui-23[data-configuration='text-and-image-in-two-columns'] .owl-item.active:not(.cloned) .font-size-44"))
+            );
 
-            return activeSlide.FindElement(By.CssSelector(".single-slide__content .font-size-44")).Text;
+            if (titleElement is null)
+            {
+                throw new NoSuchElementException("Failed to find active carousel article title element.");
+            }
+
+            return titleElement.GetAttribute("textContent").Trim();
         }
 
         public void ClickReadMore()
