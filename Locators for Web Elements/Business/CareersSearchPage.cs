@@ -1,6 +1,7 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
+using Serilog;
 
 namespace Locators_for_Web_Elements.Business;
 
@@ -10,11 +11,13 @@ public class CareersSearchPage : BasePage
 
     public void OpenJobSearchForm()
     {
+        Logger.Information("Opening job search form");
         Wait.Until(d => d.FindElement(By.CssSelector("[data-gtm-category='job_search_redirect'] a.button-body"))).Click();
     }
 
     public void SelectCountry(string country)
     {
+        Logger.Information("Selecting country: {Country}", country);
         var locationInput = Wait.Until(d => d.FindElement(By.CssSelector("input[aria-label='Choose your country']")));
         locationInput.Click();
         locationInput.SendKeys(country + Keys.Enter);
@@ -22,6 +25,7 @@ public class CareersSearchPage : BasePage
 
     public void WaitForPreloaderToDisappear()
     {
+        Logger.Information("Waiting for preloader to disappear");
         Wait.Until(d =>
         {
             var preloaders = d.FindElements(By.CssSelector("[class^='Preloader_fullSize']"));
@@ -31,6 +35,7 @@ public class CareersSearchPage : BasePage
 
     public void EnterKeyword(string keyword)
     {
+        Logger.Information("Entering keyword: {Keyword}", keyword);
         var keywordInput = Driver.FindElement(By.CssSelector("[data-testid='search-input']"));
         keywordInput.Clear();
         keywordInput.SendKeys(keyword);
@@ -38,11 +43,13 @@ public class CareersSearchPage : BasePage
 
     public void EnableFilter(string filterName)
     {
+        Logger.Information("Enabling filter: {FilterName}", filterName);
         Wait.Until(d => d.FindElement(By.CssSelector("label[for^='checkbox-vacancy_type-" + filterName + "']:not([disabled])"))).Click();
     }
 
     public void SubmitSearch()
     {
+        Logger.Information("Submitting search");
         var searchButton = Driver.FindElement(By.Name("submit_search_box_button"));
         var urlBefore = Driver.Url;
         searchButton.Click();
@@ -51,6 +58,7 @@ public class CareersSearchPage : BasePage
 
     public void ClickLastJobCard()
     {
+        Logger.Information("Clicking last job card");
         var urlBefore = Driver.Url;
         Wait.Until(d =>
         {
@@ -73,6 +81,7 @@ public class CareersSearchPage : BasePage
 
     public string GetPageBodyText()
     {
+        Logger.Information("Getting page body text");
         return Wait.Until(d => d.FindElement(By.TagName("body")).Text);
     }
 }

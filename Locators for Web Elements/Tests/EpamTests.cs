@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using System.Diagnostics;
+using Serilog;
 
 namespace Locators_for_Web_Elements.Tests;
 
@@ -26,6 +26,7 @@ public class EpamTests : Core.BaseTest
     {
         ExecuteTest(() =>
         {
+            Logger.Information("Starting Task1: ValidatePositionSearch - Keyword: {Keyword}, Country: {Country}", keyword, country);
             var home = new Business.EpamHomePage(Driver);
             var careersPage = new Business.CareersSearchPage(Driver);
 
@@ -43,6 +44,7 @@ public class EpamTests : Core.BaseTest
 
             string pageText = careersPage.GetPageBodyText();
             Assert.Contains(keyword, pageText, StringComparison.OrdinalIgnoreCase);
+            Logger.Information("Task1 passed for keyword: {Keyword}, country: {Country}", keyword, country);
         }, $"Task1_ValidatePositionSearch_{keyword}_{country}");
     }
 
@@ -54,6 +56,7 @@ public class EpamTests : Core.BaseTest
     {
         ExecuteTest(() =>
         {
+            Logger.Information("Starting Task2: ValidateGlobalSearch - Keyword: {Keyword}", searchKeyword);
             var home = new Business.EpamHomePage(Driver);
 
             home.DismissOneTrust();
@@ -63,6 +66,7 @@ public class EpamTests : Core.BaseTest
 
             bool allContainKeyword = home.AllResultsContainKeyword(searchKeyword);
             Assert.True(allContainKeyword, $"Not all search results contained the keyword: {searchKeyword}");
+            Logger.Information("Task2 passed for keyword: {Keyword}", searchKeyword);
         }, $"Task2_ValidateGlobalSearch_{searchKeyword}");
     }
 
@@ -72,6 +76,7 @@ public class EpamTests : Core.BaseTest
     {
         ExecuteTest(() =>
         {
+            Logger.Information("Starting Task3: ValidateFileDownload - File: {FileName}", partialFileName);
             var home = new Business.EpamHomePage(Driver);
 
             home.DismissOneTrust();
@@ -80,6 +85,7 @@ public class EpamTests : Core.BaseTest
 
             string filePath = WaitForFileDownload(partialFileName);
             Assert.True(File.Exists(filePath), $"Downloaded file not found: {filePath}");
+            Logger.Information("Task3 passed. File downloaded: {FilePath}", filePath);
         }, $"Task3_ValidateFileDownload_{partialFileName}");
     }
 
@@ -90,6 +96,7 @@ public class EpamTests : Core.BaseTest
     {
         ExecuteTest(() =>
         {
+            Logger.Information("Starting Task4: ValidateCarouselArticleTitle - Swipes: {SwipeCount}", swipeCount);
             var home = new Business.EpamHomePage(Driver);
             var insights = new Business.InsightsPage(Driver);
 
@@ -101,11 +108,13 @@ public class EpamTests : Core.BaseTest
             string detailTitle = insights.GetArticleDetailTitle();
 
             Assert.Equal(articleTitle, detailTitle);
+            Logger.Information("Task4 passed. Title matches: {Title}", articleTitle);
         }, $"Task4_ValidateCarouselArticleTitle_{swipeCount}");
     }
 
     private string WaitForFileDownload(string partialFileName, int timeoutSeconds = 30)
     {
+        Logger.Information("Waiting for file download: {FileName}", partialFileName);
         var wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(timeoutSeconds));
         return wait.Until(d =>
         {

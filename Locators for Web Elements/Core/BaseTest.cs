@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
+using Serilog;
 
 namespace Locators_for_Web_Elements.Core;
 
@@ -8,19 +10,28 @@ public abstract class BaseTest : IDisposable
 {
     protected readonly IWebDriver Driver;
     protected readonly WebDriverWait Wait;
+    protected readonly ILogger Logger;
     protected readonly string BaseUrl;
     protected readonly string DownloadPath;
 
     protected BaseTest()
     {
+        Logger = Log.ForContext(GetType());
+
         var config = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("config.json")
             .Build();
 
+        if (!LoggingManager.IsInitialized)
+            LoggingManager.Initialize(config);
+
         BaseUrl = config["BaseUrl"]!;
         DownloadPath = Path.Combine(Path.GetTempPath(), config["DownloadPath"] ?? "epam-downloads");
         Directory.CreateDirectory(DownloadPath);
+
+        Logger.Information("Starting test class: {TestClass}", GetType().Name);
+        Logger.Information("Initializing browser: {Browser}", config["Browser"] ?? "Chrome");
 
         var options = new ChromeOptions();
         var userDataDir = Path.Combine(Path.GetTempPath(), "epam-chrome-profile");
@@ -41,6 +52,7 @@ public abstract class BaseTest : IDisposable
 
         DismissOneTrustCookies();
 
+        Logger.Information("Navigating to base URL: {BaseUrl}", BaseUrl);
         Driver.Navigate().GoToUrl(BaseUrl);
     }
 
@@ -61,10 +73,12 @@ public abstract class BaseTest : IDisposable
                         ["path"] = "/"
                     });
                 }
+                Logger.Information("OneTrust consent cookies set");
             }
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.Warning(ex, "Failed to dismiss OneTrust cookies");
         }
     }
 
@@ -76,6 +90,7 @@ public abstract class BaseTest : IDisposable
         }
         catch (Exception ex)
         {
+            Logger.Error(ex, "Test '{TestName}' failed", testName);
             TakeScreenshot(testName);
             throw;
         }
@@ -94,10 +109,12 @@ public abstract class BaseTest : IDisposable
             {
                 var screenshot = screenshotDriver.GetScreenshot();
                 screenshot.SaveAsFile(filePath);
+                Logger.Error("Screenshot saved: {FilePath}", filePath);
             }
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.Error(ex, "Failed to capture screenshot for test: {TestName}", testName);
         }
     }
 
@@ -105,10 +122,16 @@ public abstract class BaseTest : IDisposable
     {
         try
         {
+            Logger.Information("Closing browser");
             Driver?.Quit();
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.Error(ex, "Error during browser cleanup");
+        }
+        finally
+        {
+            Log.CloseAndFlush();
         }
     }
 }

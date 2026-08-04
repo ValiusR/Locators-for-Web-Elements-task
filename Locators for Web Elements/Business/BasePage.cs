@@ -2,7 +2,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
-using System.Diagnostics;
+using Serilog;
 
 namespace Locators_for_Web_Elements.Business;
 
@@ -11,6 +11,7 @@ public class BasePage
     protected readonly IWebDriver Driver;
     protected readonly WebDriverWait Wait;
     protected readonly Actions Actions;
+    protected readonly ILogger Logger;
 
     public BasePage(IWebDriver driver)
     {
@@ -18,6 +19,7 @@ public class BasePage
         Wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
         Wait.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
         Actions = new Actions(driver);
+        Logger = Log.ForContext(GetType());
     }
 
     public void DismissOneTrust()
@@ -37,11 +39,12 @@ public class BasePage
                         ["path"] = "/"
                     });
                 }
+                Logger.Information("OneTrust cookies dismissed");
             }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"DismissOneTrust failed: {ex.Message}");
+            Logger.Warning(ex, "DismissOneTrust failed");
         }
     }
 }
