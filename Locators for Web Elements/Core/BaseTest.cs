@@ -20,7 +20,7 @@ public abstract class BaseTest : IDisposable
 
         var config = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("config.json")
+            .AddJsonFile("Tests/config.json")
             .Build();
 
         if (!LoggingManager.IsInitialized)
