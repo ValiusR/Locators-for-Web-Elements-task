@@ -203,7 +203,6 @@ namespace Locators_for_Web_Elements
             for (int i = 0; i < times; i++)
             {
                 nextButton.Click();
-                Thread.Sleep(1000);
             }
         }
 
