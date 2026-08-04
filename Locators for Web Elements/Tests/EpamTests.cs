@@ -1,24 +1,10 @@
-using Microsoft.Extensions.Configuration;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 using Serilog;
 
 namespace Locators_for_Web_Elements.Tests;
 
 public class EpamTests : Core.BaseTest
 {
-    private readonly string DownloadPathLocal;
-
-    public EpamTests()
-    {
-        var config = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("config.json")
-            .Build();
-
-        DownloadPathLocal = Path.Combine(Path.GetTempPath(), config["DownloadPath"] ?? "epam-downloads");
-    }
-
     [Theory]
     [InlineData("JavaScript", "United States")]
     [InlineData("Java", "Lithuania")]
@@ -110,17 +96,5 @@ public class EpamTests : Core.BaseTest
             Assert.Equal(articleTitle, detailTitle);
             Logger.Information("Task4 passed. Title matches: {Title}", articleTitle);
         }, $"Task4_ValidateCarouselArticleTitle_{swipeCount}");
-    }
-
-    private string WaitForFileDownload(string partialFileName, int timeoutSeconds = 30)
-    {
-        Logger.Information("Waiting for file download: {FileName}", partialFileName);
-        var wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(timeoutSeconds));
-        return wait.Until(d =>
-        {
-            var file = Directory.GetFiles(DownloadPathLocal)
-                .FirstOrDefault(f => Path.GetFileName(f).Contains(partialFileName));
-            return file;
-        })!;
     }
 }

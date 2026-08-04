@@ -118,6 +118,18 @@ public abstract class BaseTest : IDisposable
         }
     }
 
+    protected string WaitForFileDownload(string partialFileName, int timeoutSeconds = 30)
+    {
+        Logger.Information("Waiting for file download: {FileName}", partialFileName);
+        var wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(timeoutSeconds));
+        return wait.Until(d =>
+        {
+            var file = Directory.GetFiles(DownloadPath)
+                .FirstOrDefault(f => Path.GetFileName(f).Contains(partialFileName));
+            return file;
+        })!;
+    }
+
     public void Dispose()
     {
         try
