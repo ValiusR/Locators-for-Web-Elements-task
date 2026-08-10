@@ -52,8 +52,6 @@ public abstract class BaseTest : IAsyncLifetime
         Wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(10));
         Wait.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
 
-        BrowserFactory.DismissOneTrustCookies(Driver);
-
         Logger.Information("Navigating to base URL: {BaseUrl}", Settings.BaseUrl);
         Driver.Navigate().GoToUrl(Settings.BaseUrl);
 

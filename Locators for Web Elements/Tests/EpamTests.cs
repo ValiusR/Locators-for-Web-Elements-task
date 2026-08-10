@@ -16,8 +16,6 @@ public class EpamTests : BaseTest
 
         home.ClickCareersLink();
         careersPage.OpenJobSearchForm();
-        careersPage.DismissOneTrust();
-
         careersPage.SelectCountry(country);
         careersPage.WaitForPreloaderToDisappear();
         careersPage.EnterKeyword(keyword);
@@ -40,7 +38,6 @@ public class EpamTests : BaseTest
         Logger.Information("Starting Task2: ValidateGlobalSearch - Keyword: {Keyword}", searchKeyword);
         var home = new Business.EpamHomePage(Driver);
 
-        home.DismissOneTrust();
         home.OpenGlobalSearch();
         home.EnterSearchKeyword(searchKeyword);
         home.ClickSearchButton();
@@ -57,7 +54,6 @@ public class EpamTests : BaseTest
         Logger.Information("Starting Task3: ValidateFileDownload - File: {FileName}", partialFileName);
         var home = new Business.EpamHomePage(Driver);
 
-        home.DismissOneTrust();
         home.ScrollToFooter();
         home.ClickPolicyPdfLink(partialFileName);
 
@@ -75,7 +71,6 @@ public class EpamTests : BaseTest
         var home = new Business.EpamHomePage(Driver);
         var insights = new Business.InsightsPage(Driver);
 
-        home.DismissOneTrust();
         insights.OpenInsights();
         insights.SwipeCarousel(swipeCount);
         string articleTitle = insights.GetCurrentArticleTitle();
