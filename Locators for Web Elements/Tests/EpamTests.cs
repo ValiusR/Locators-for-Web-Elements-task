@@ -61,7 +61,7 @@ public class EpamTests : BaseTest
         home.ScrollToFooter();
         home.ClickPolicyPdfLink(partialFileName);
 
-        string filePath = WaitForFileDownload(partialFileName);
+        string filePath = Core.TestUtils.WaitForFileDownload(Driver, Logger, DownloadPath, partialFileName);
         Assert.True(File.Exists(filePath), $"Downloaded file not found: {filePath}");
         Logger.Information("Task3 passed. File downloaded: {FilePath}", filePath);
     }

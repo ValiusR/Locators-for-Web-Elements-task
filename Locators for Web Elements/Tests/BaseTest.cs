@@ -68,7 +68,7 @@ public abstract class BaseTest : IAsyncLifetime
             var testName = TestContext.Current.Test?.TestDisplayName ?? "UnknownTest";
             var message = state.ExceptionMessages?.FirstOrDefault();
             Logger.Error("Test '{TestName}' failed: {Message}", testName, message);
-            TakeScreenshot(testName);
+            Core.TestUtils.TakeScreenshot(Driver, Logger, testName, GetType().Name);
         }
 
         try
@@ -88,37 +88,4 @@ public abstract class BaseTest : IAsyncLifetime
         return ValueTask.CompletedTask;
     }
 
-    protected void TakeScreenshot(string testName)
-    {
-        try
-        {
-            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
-            var screenshotDir = Path.Combine("Screenshots", GetType().Name);
-            Directory.CreateDirectory(screenshotDir);
-            var filePath = Path.Combine(screenshotDir, $"{testName}_{timestamp}.png");
-
-            if (Driver is ITakesScreenshot screenshotDriver)
-            {
-                var screenshot = screenshotDriver.GetScreenshot();
-                screenshot.SaveAsFile(filePath);
-                Logger.Information("Screenshot saved: {FilePath}", filePath);
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.Error(ex, "Failed to capture screenshot for test: {TestName}", testName);
-        }
-    }
-
-    protected string WaitForFileDownload(string partialFileName, int timeoutSeconds = 30)
-    {
-        Logger.Information("Waiting for file download: {FileName}", partialFileName);
-        var wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(timeoutSeconds));
-        return wait.Until(d =>
-        {
-            var file = Directory.GetFiles(DownloadPath)
-                .FirstOrDefault(f => Path.GetFileName(f).Contains(partialFileName));
-            return file;
-        })!;
-    }
 }
