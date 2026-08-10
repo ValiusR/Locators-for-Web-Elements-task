@@ -19,9 +19,12 @@ public abstract class BaseTest : IDisposable
     {
         Logger = Log.ForContext(GetType());
 
+        var environment = Environment.GetEnvironmentVariable("TAF_ENVIRONMENT") ?? "Production";
+
         var config = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("Tests/config.json")
+            .AddJsonFile("Tests/config.json", optional: false)
+            .AddJsonFile($"Tests/config.{environment}.json", optional: true)
             .Build();
 
         if (!LoggingManager.Instance.IsInitialized)
