@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
 
@@ -14,15 +13,14 @@ public sealed class LoggingManager
 
     private LoggingManager() { }
 
-    public void Initialize(IConfiguration configuration)
+    public void Initialize(LoggingSettings loggingSettings)
     {
         if (IsInitialized) return;
 
-        var logSection = configuration.GetSection("Logging");
-        var minLevelStr = logSection["MinLevel"] ?? "Information";
-        var filePath = logSection["FilePath"] ?? "Logs/epam-taf-.log";
-        var consoleOutput = bool.Parse(logSection["ConsoleOutput"] ?? "true");
-        var retainedCount = int.Parse(logSection["RetainedFileCountLimit"] ?? "7");
+        var minLevelStr = loggingSettings.MinLevel;
+        var filePath = loggingSettings.FilePath;
+        var consoleOutput = loggingSettings.ConsoleOutput;
+        var retainedCount = loggingSettings.RetainedFileCountLimit;
 
         var loggerConfig = new LoggerConfiguration();
 

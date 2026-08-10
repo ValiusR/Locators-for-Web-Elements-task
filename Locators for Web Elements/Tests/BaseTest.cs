@@ -1,3 +1,4 @@
+using System.IO;
 using Microsoft.Extensions.Configuration;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -15,8 +16,8 @@ public abstract class BaseTest : IAsyncLifetime
     protected IWebDriver Driver { get; private set; } = null!;
     protected WebDriverWait Wait { get; private set; } = null!;
     protected ILogger Logger { get; }
-    protected string BaseUrl { get; }
-    protected string DownloadPath { get; }
+    protected TestSettings Settings { get; }
+    protected string DownloadPath { get; private set; } = null!;
 
     protected BaseTest()
     {
@@ -30,15 +31,17 @@ public abstract class BaseTest : IAsyncLifetime
             .AddJsonFile($"Tests/config.{environment}.json", optional: true)
             .Build();
 
-        if (!LoggingManager.Instance.IsInitialized)
-            LoggingManager.Instance.Initialize(config);
+        Settings = new TestSettings();
+        config.Bind(Settings);
 
-        BaseUrl = config["BaseUrl"]!;
-        DownloadPath = Path.Combine(Path.GetTempPath(), config["DownloadPath"] ?? "epam-downloads");
+        DownloadPath = Path.Combine(Path.GetTempPath(), Settings.DownloadPath ?? "epam-downloads");
         Directory.CreateDirectory(DownloadPath);
 
+        if (!LoggingManager.Instance.IsInitialized)
+            LoggingManager.Instance.Initialize(Settings.Logging);
+
         Logger.Information("Starting test class: {TestClass}", GetType().Name);
-        Logger.Information("Initializing browser: {Browser}", config["Browser"] ?? "Chrome");
+        Logger.Information("Initializing browser: {Browser}", Settings.Browser);
     }
 
     public ValueTask InitializeAsync()
@@ -62,8 +65,8 @@ public abstract class BaseTest : IAsyncLifetime
 
         DismissOneTrustCookies();
 
-        Logger.Information("Navigating to base URL: {BaseUrl}", BaseUrl);
-        Driver.Navigate().GoToUrl(BaseUrl);
+        Logger.Information("Navigating to base URL: {BaseUrl}", Settings.BaseUrl);
+        Driver.Navigate().GoToUrl(Settings.BaseUrl);
 
         return ValueTask.CompletedTask;
     }
