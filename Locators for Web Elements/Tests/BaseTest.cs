@@ -24,8 +24,8 @@ public abstract class BaseTest : IDisposable
             .AddJsonFile("Tests/config.json")
             .Build();
 
-        if (!LoggingManager.IsInitialized)
-            LoggingManager.Initialize(config);
+        if (!LoggingManager.Instance.IsInitialized)
+            LoggingManager.Instance.Initialize(config);
 
         BaseUrl = config["BaseUrl"]!;
         DownloadPath = Path.Combine(Path.GetTempPath(), config["DownloadPath"] ?? "epam-downloads");

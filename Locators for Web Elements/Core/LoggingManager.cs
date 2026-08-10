@@ -4,11 +4,17 @@ using Serilog.Events;
 
 namespace Locators_for_Web_Elements.Core;
 
-public static class LoggingManager
+public sealed class LoggingManager
 {
-    public static bool IsInitialized { get; private set; }
+    private static readonly Lazy<LoggingManager> _instance = new(() => new LoggingManager());
 
-    public static void Initialize(IConfiguration configuration)
+    public static LoggingManager Instance => _instance.Value;
+
+    public bool IsInitialized { get; private set; }
+
+    private LoggingManager() { }
+
+    public void Initialize(IConfiguration configuration)
     {
         if (IsInitialized) return;
 
