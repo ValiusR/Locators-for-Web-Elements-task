@@ -1,7 +1,6 @@
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using Serilog;
 using System.Linq;
@@ -46,55 +45,19 @@ public abstract class BaseTest : IAsyncLifetime
 
     public ValueTask InitializeAsync()
     {
-        var options = new ChromeOptions();
-        var userDataDir = Path.Combine(Path.GetTempPath(), "epam-chrome-profile");
-        options.AddArgument($"--user-data-dir={userDataDir}");
-        options.AddArgument("--disable-infobars");
-        options.AddUserProfilePreference("intl.accept_languages", "en-US");
-        options.AddUserProfilePreference("download.prompt_for_download", false);
-        options.AddUserProfilePreference("download.default_directory", DownloadPath);
-        options.AddUserProfilePreference("download.directory_upgrade", true);
-        options.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
-
-        Driver = BrowserFactory.Create("Chrome", options);
+        Driver = BrowserFactory.Create(Settings.Browser, DownloadPath);
         Driver.Manage().Window.Maximize();
         Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
 
         Wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(10));
         Wait.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
 
-        DismissOneTrustCookies();
+        BrowserFactory.DismissOneTrustCookies(Driver);
 
         Logger.Information("Navigating to base URL: {BaseUrl}", Settings.BaseUrl);
         Driver.Navigate().GoToUrl(Settings.BaseUrl);
 
         return ValueTask.CompletedTask;
-    }
-
-    private void DismissOneTrustCookies()
-    {
-        try
-        {
-            if (Driver is ChromeDriver chrome)
-            {
-                var cookieNames = new[] { "OptanonAlertBoxClosed", "onetrust-consent-sent" };
-                foreach (var name in cookieNames)
-                {
-                    chrome.ExecuteCdpCommand("Network.setCookie", new Dictionary<string, object?>
-                    {
-                        ["name"] = name,
-                        ["value"] = "true",
-                        ["domain"] = ".epam.com",
-                        ["path"] = "/"
-                    });
-                }
-                Logger.Information("OneTrust consent cookies set");
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.Warning(ex, "Failed to dismiss OneTrust cookies");
-        }
     }
 
     public ValueTask DisposeAsync()

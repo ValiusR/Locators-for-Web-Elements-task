@@ -1,5 +1,4 @@
 using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using Serilog;
@@ -26,21 +25,8 @@ public class BasePage
     {
         try
         {
-            if (Driver is ChromeDriver chrome)
-            {
-                var cookieNames = new[] { "OptanonAlertBoxClosed", "onetrust-consent-sent" };
-                foreach (var name in cookieNames)
-                {
-                    chrome.ExecuteCdpCommand("Network.setCookie", new Dictionary<string, object?>
-                    {
-                        ["name"] = name,
-                        ["value"] = "true",
-                        ["domain"] = ".epam.com",
-                        ["path"] = "/"
-                    });
-                }
-                Logger.Information("OneTrust cookies dismissed");
-            }
+            Locators_for_Web_Elements.Core.BrowserFactory.DismissOneTrustCookies(Driver);
+            Logger.Information("OneTrust cookies dismissed");
         }
         catch (Exception ex)
         {
