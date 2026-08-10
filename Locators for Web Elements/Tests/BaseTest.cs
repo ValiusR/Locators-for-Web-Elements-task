@@ -3,8 +3,9 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using Serilog;
+using Locators_for_Web_Elements.Core;
 
-namespace Locators_for_Web_Elements.Core;
+namespace Locators_for_Web_Elements.Tests;
 
 public abstract class BaseTest : IDisposable
 {

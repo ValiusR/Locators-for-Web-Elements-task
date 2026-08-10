@@ -3,7 +3,7 @@ using Serilog;
 
 namespace Locators_for_Web_Elements.Tests;
 
-public class EpamTests : Core.BaseTest
+public class EpamTests : BaseTest
 {
     [Theory]
     [InlineData("JavaScript", "United States")]
