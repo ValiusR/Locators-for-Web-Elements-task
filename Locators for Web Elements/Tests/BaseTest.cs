@@ -3,17 +3,20 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using Serilog;
+using System.Linq;
+using System.Threading.Tasks;
+using Xunit;
 using Locators_for_Web_Elements.Core;
 
 namespace Locators_for_Web_Elements.Tests;
 
-public abstract class BaseTest : IDisposable
+public abstract class BaseTest : IAsyncLifetime
 {
-    protected readonly IWebDriver Driver;
-    protected readonly WebDriverWait Wait;
-    protected readonly ILogger Logger;
-    protected readonly string BaseUrl;
-    protected readonly string DownloadPath;
+    protected IWebDriver Driver { get; private set; } = null!;
+    protected WebDriverWait Wait { get; private set; } = null!;
+    protected ILogger Logger { get; }
+    protected string BaseUrl { get; }
+    protected string DownloadPath { get; }
 
     protected BaseTest()
     {
@@ -36,7 +39,10 @@ public abstract class BaseTest : IDisposable
 
         Logger.Information("Starting test class: {TestClass}", GetType().Name);
         Logger.Information("Initializing browser: {Browser}", config["Browser"] ?? "Chrome");
+    }
 
+    public ValueTask InitializeAsync()
+    {
         var options = new ChromeOptions();
         var userDataDir = Path.Combine(Path.GetTempPath(), "epam-chrome-profile");
         options.AddArgument($"--user-data-dir={userDataDir}");
@@ -47,7 +53,7 @@ public abstract class BaseTest : IDisposable
         options.AddUserProfilePreference("download.directory_upgrade", true);
         options.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
 
-        Driver = BrowserFactory.Create(config["Browser"] ?? "Chrome", options);
+        Driver = BrowserFactory.Create("Chrome", options);
         Driver.Manage().Window.Maximize();
         Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
 
@@ -58,6 +64,8 @@ public abstract class BaseTest : IDisposable
 
         Logger.Information("Navigating to base URL: {BaseUrl}", BaseUrl);
         Driver.Navigate().GoToUrl(BaseUrl);
+
+        return ValueTask.CompletedTask;
     }
 
     private void DismissOneTrustCookies()
@@ -86,18 +94,32 @@ public abstract class BaseTest : IDisposable
         }
     }
 
-    protected void ExecuteTest(Action testBody, string testName)
+    public ValueTask DisposeAsync()
     {
+        var state = TestContext.Current.TestState;
+        if (state?.Result == TestResult.Failed)
+        {
+            var testName = TestContext.Current.Test?.TestDisplayName ?? "UnknownTest";
+            var message = state.ExceptionMessages?.FirstOrDefault();
+            Logger.Error("Test '{TestName}' failed: {Message}", testName, message);
+            TakeScreenshot(testName);
+        }
+
         try
         {
-            testBody();
+            Logger.Information("Closing browser");
+            Driver?.Quit();
         }
         catch (Exception ex)
         {
-            Logger.Error(ex, "Test '{TestName}' failed", testName);
-            TakeScreenshot(testName);
-            throw;
+            Logger.Error(ex, "Error during browser cleanup");
         }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
+
+        return ValueTask.CompletedTask;
     }
 
     protected void TakeScreenshot(string testName)
@@ -113,7 +135,7 @@ public abstract class BaseTest : IDisposable
             {
                 var screenshot = screenshotDriver.GetScreenshot();
                 screenshot.SaveAsFile(filePath);
-                Logger.Error("Screenshot saved: {FilePath}", filePath);
+                Logger.Information("Screenshot saved: {FilePath}", filePath);
             }
         }
         catch (Exception ex)
@@ -132,22 +154,5 @@ public abstract class BaseTest : IDisposable
                 .FirstOrDefault(f => Path.GetFileName(f).Contains(partialFileName));
             return file;
         })!;
-    }
-
-    public void Dispose()
-    {
-        try
-        {
-            Logger.Information("Closing browser");
-            Driver?.Quit();
-        }
-        catch (Exception ex)
-        {
-            Logger.Error(ex, "Error during browser cleanup");
-        }
-        finally
-        {
-            Log.CloseAndFlush();
-        }
     }
 }
