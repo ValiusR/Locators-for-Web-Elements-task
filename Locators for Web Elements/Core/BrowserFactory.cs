@@ -4,12 +4,30 @@ using OpenQA.Selenium.Chrome;
 
 namespace Locators_for_Web_Elements.Core;
 
-internal static class ChromeOptionsBuilder
+public static class BrowserFactory
 {
-    public static ChromeOptions Build(string downloadPath)
+    public static IWebDriver Create(string browser, string downloadPath)
+    {
+        var browserName = browser.ToLowerInvariant();
+
+        return browserName switch
+        {
+            "chrome" => CreateChromeDriver(downloadPath),
+            _ => throw new ArgumentException($"Unsupported browser: {browser}")
+        };
+    }
+
+    private static IWebDriver CreateChromeDriver(string downloadPath)
+    {
+        var options = CreateChromeOptions(downloadPath);
+        return new ChromeDriver(options);
+    }
+
+    private static ChromeOptions CreateChromeOptions(string downloadPath)
     {
         var options = new ChromeOptions();
         var userDataDir = Path.Combine(Path.GetTempPath(), "epam-chrome-profile");
+
         options.AddArgument($"--user-data-dir={userDataDir}");
         options.AddArgument("--disable-infobars");
         options.AddUserProfilePreference("intl.accept_languages", "en-US");
@@ -17,20 +35,8 @@ internal static class ChromeOptionsBuilder
         options.AddUserProfilePreference("download.default_directory", downloadPath);
         options.AddUserProfilePreference("download.directory_upgrade", true);
         options.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
-        return options;
-    }
-}
 
-public static class BrowserFactory
-{
-    public static IWebDriver Create(string browser, string downloadPath)
-    {
-        var normalized = browser.ToLowerInvariant();
-        return normalized switch
-        {
-            "chrome" => new ChromeDriver(ChromeOptionsBuilder.Build(downloadPath)),
-            _ => throw new ArgumentException($"Unsupported browser: {browser}")
-        };
+        return options;
     }
 
     public static void DismissOneTrustCookies(IWebDriver driver)
