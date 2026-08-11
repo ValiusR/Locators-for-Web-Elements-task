@@ -19,19 +19,45 @@ public class BasePage
         Wait.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
         Actions = new Actions(driver);
         Logger = Log.ForContext(GetType());
-        DismissOneTrust();
+
+        if (IsOneTrustBannerVisible(Driver))
+        {
+            DismissOneTrust();
+        }
+    }
+
+    public static bool IsOneTrustBannerVisible(IWebDriver driver)
+    {
+        try
+        {
+            var banner = driver.FindElement(By.Id("onetrust-banner-sdk"));
+            if (banner == null)
+            {
+                return false;
+            }
+
+            var display = banner.GetCssValue("display");
+            var visibility = banner.GetCssValue("visibility");
+            var opacity = banner.GetCssValue("opacity");
+
+            return banner.Displayed
+                && !string.Equals(display, "none", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(visibility, "hidden", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(opacity, "0", StringComparison.OrdinalIgnoreCase);
+        }
+        catch (NoSuchElementException)
+        {
+            return false;
+        }
+        catch (StaleElementReferenceException)
+        {
+            return false;
+        }
     }
 
     public void DismissOneTrust()
     {
-        try
-        {
-            Locators_for_Web_Elements.Core.BrowserFactory.DismissOneTrustCookies(Driver);
-            Logger.Information("OneTrust cookies dismissed");
-        }
-        catch (Exception ex)
-        {
-            Logger.Warning(ex, "DismissOneTrust failed");
-        }
+        Locators_for_Web_Elements.Core.BrowserFactory.DismissOneTrustCookies(Driver);
+        Logger.Information("OneTrust cookies dismissed");
     }
 }
