@@ -1,141 +1,98 @@
+using System.IO;
 using Microsoft.Extensions.Configuration;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using Serilog;
+using System.Linq;
+using System.Threading.Tasks;
+using Xunit;
 using Locators_for_Web_Elements.Core;
 
+[assembly: AssemblyFixture(typeof(Locators_for_Web_Elements.Tests.TestEnvironmentFixture))]
 namespace Locators_for_Web_Elements.Tests;
 
-public abstract class BaseTest : IDisposable
+public sealed class TestEnvironmentFixture : IDisposable
 {
-    protected readonly IWebDriver Driver;
-    protected readonly WebDriverWait Wait;
-    protected readonly ILogger Logger;
-    protected readonly string BaseUrl;
-    protected readonly string DownloadPath;
+    public static TestEnvironmentFixture Instance { get; private set; } = null!;
 
-    protected BaseTest()
+    public TestSettings Settings { get; }
+    public string DownloadPath { get; }
+
+    public TestEnvironmentFixture()
     {
-        Logger = Log.ForContext(GetType());
-
         var environment = Environment.GetEnvironmentVariable("TAF_ENVIRONMENT") ?? "Production";
-
         var config = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("Tests/config.json", optional: false)
             .AddJsonFile($"Tests/config.{environment}.json", optional: true)
             .Build();
 
-        if (!LoggingManager.Instance.IsInitialized)
-            LoggingManager.Instance.Initialize(config);
+        Settings = new TestSettings();
+        config.Bind(Settings);
 
-        BaseUrl = config["BaseUrl"]!;
-        DownloadPath = Path.Combine(Path.GetTempPath(), config["DownloadPath"] ?? "epam-downloads");
+        DownloadPath = Path.Combine(Path.GetTempPath(), Settings.DownloadPath ?? "epam-downloads");
         Directory.CreateDirectory(DownloadPath);
 
+        LoggingManager.Instance.Initialize(Settings.Logging);
+
+        Instance = this;
+    }
+
+    public void Dispose()
+    {
+        Log.CloseAndFlush();
+    }
+}
+
+public abstract class BaseTest : IAsyncLifetime
+{
+    protected IWebDriver Driver { get; private set; } = null!;
+    protected WebDriverWait Wait { get; private set; } = null!;
+    protected ILogger Logger { get; }
+    protected TestSettings Settings { get; }
+    protected string DownloadPath { get; }
+
+    protected BaseTest()
+    {
+        var environment = TestEnvironmentFixture.Instance
+            ?? throw new InvalidOperationException(
+                $"{nameof(TestEnvironmentFixture)} was not initialized. " +
+                "Check that the [assembly: AssemblyFixture(...)] attribute is present.");
+
+        Settings = environment.Settings;
+        DownloadPath = environment.DownloadPath;
+
+        Logger = Log.ForContext(GetType());
         Logger.Information("Starting test class: {TestClass}", GetType().Name);
-        Logger.Information("Initializing browser: {Browser}", config["Browser"] ?? "Chrome");
+        Logger.Information("Initializing browser: {Browser}", Settings.Browser);
+    }
 
-        var options = new ChromeOptions();
-        var userDataDir = Path.Combine(Path.GetTempPath(), "epam-chrome-profile");
-        options.AddArgument($"--user-data-dir={userDataDir}");
-        options.AddArgument("--disable-infobars");
-        options.AddUserProfilePreference("intl.accept_languages", "en-US");
-        options.AddUserProfilePreference("download.prompt_for_download", false);
-        options.AddUserProfilePreference("download.default_directory", DownloadPath);
-        options.AddUserProfilePreference("download.directory_upgrade", true);
-        options.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
-
-        Driver = BrowserFactory.Create(config["Browser"] ?? "Chrome", options);
+    public ValueTask InitializeAsync()
+    {
+        Driver = BrowserFactory.Create(Settings.Browser, DownloadPath);
         Driver.Manage().Window.Maximize();
         Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
 
         Wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(10));
         Wait.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
 
-        DismissOneTrustCookies();
+        Logger.Information("Navigating to base URL: {BaseUrl}", Settings.BaseUrl);
+        Driver.Navigate().GoToUrl(Settings.BaseUrl);
 
-        Logger.Information("Navigating to base URL: {BaseUrl}", BaseUrl);
-        Driver.Navigate().GoToUrl(BaseUrl);
+        return ValueTask.CompletedTask;
     }
 
-    private void DismissOneTrustCookies()
+    public ValueTask DisposeAsync()
     {
-        try
+        var state = TestContext.Current.TestState;
+        if (state?.Result == TestResult.Failed)
         {
-            if (Driver is ChromeDriver chrome)
-            {
-                var cookieNames = new[] { "OptanonAlertBoxClosed", "onetrust-consent-sent" };
-                foreach (var name in cookieNames)
-                {
-                    chrome.ExecuteCdpCommand("Network.setCookie", new Dictionary<string, object?>
-                    {
-                        ["name"] = name,
-                        ["value"] = "true",
-                        ["domain"] = ".epam.com",
-                        ["path"] = "/"
-                    });
-                }
-                Logger.Information("OneTrust consent cookies set");
-            }
+            var testName = TestContext.Current.Test?.TestDisplayName ?? "UnknownTest";
+            var message = state.ExceptionMessages?.FirstOrDefault();
+            Logger.Error("Test '{TestName}' failed: {Message}", testName, message);
+            Core.TestUtils.TakeScreenshot(Driver, Logger, testName, GetType().Name);
         }
-        catch (Exception ex)
-        {
-            Logger.Warning(ex, "Failed to dismiss OneTrust cookies");
-        }
-    }
 
-    protected void ExecuteTest(Action testBody, string testName)
-    {
-        try
-        {
-            testBody();
-        }
-        catch (Exception ex)
-        {
-            Logger.Error(ex, "Test '{TestName}' failed", testName);
-            TakeScreenshot(testName);
-            throw;
-        }
-    }
-
-    protected void TakeScreenshot(string testName)
-    {
-        try
-        {
-            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
-            var screenshotDir = Path.Combine("Screenshots", GetType().Name);
-            Directory.CreateDirectory(screenshotDir);
-            var filePath = Path.Combine(screenshotDir, $"{testName}_{timestamp}.png");
-
-            if (Driver is ITakesScreenshot screenshotDriver)
-            {
-                var screenshot = screenshotDriver.GetScreenshot();
-                screenshot.SaveAsFile(filePath);
-                Logger.Error("Screenshot saved: {FilePath}", filePath);
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.Error(ex, "Failed to capture screenshot for test: {TestName}", testName);
-        }
-    }
-
-    protected string WaitForFileDownload(string partialFileName, int timeoutSeconds = 30)
-    {
-        Logger.Information("Waiting for file download: {FileName}", partialFileName);
-        var wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(timeoutSeconds));
-        return wait.Until(d =>
-        {
-            var file = Directory.GetFiles(DownloadPath)
-                .FirstOrDefault(f => Path.GetFileName(f).Contains(partialFileName));
-            return file;
-        })!;
-    }
-
-    public void Dispose()
-    {
         try
         {
             Logger.Information("Closing browser");
@@ -145,9 +102,7 @@ public abstract class BaseTest : IDisposable
         {
             Logger.Error(ex, "Error during browser cleanup");
         }
-        finally
-        {
-            Log.CloseAndFlush();
-        }
+
+        return ValueTask.CompletedTask;
     }
 }

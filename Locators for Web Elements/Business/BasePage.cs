@@ -1,5 +1,4 @@
 using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using Serilog;
@@ -20,31 +19,45 @@ public class BasePage
         Wait.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
         Actions = new Actions(driver);
         Logger = Log.ForContext(GetType());
+
+        if (IsOneTrustBannerVisible(Driver))
+        {
+            DismissOneTrust();
+        }
+    }
+
+    public static bool IsOneTrustBannerVisible(IWebDriver driver)
+    {
+        try
+        {
+            var banner = driver.FindElement(By.Id("onetrust-banner-sdk"));
+            if (banner == null)
+            {
+                return false;
+            }
+
+            var display = banner.GetCssValue("display");
+            var visibility = banner.GetCssValue("visibility");
+            var opacity = banner.GetCssValue("opacity");
+
+            return banner.Displayed
+                && !string.Equals(display, "none", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(visibility, "hidden", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(opacity, "0", StringComparison.OrdinalIgnoreCase);
+        }
+        catch (NoSuchElementException)
+        {
+            return false;
+        }
+        catch (StaleElementReferenceException)
+        {
+            return false;
+        }
     }
 
     public void DismissOneTrust()
     {
-        try
-        {
-            if (Driver is ChromeDriver chrome)
-            {
-                var cookieNames = new[] { "OptanonAlertBoxClosed", "onetrust-consent-sent" };
-                foreach (var name in cookieNames)
-                {
-                    chrome.ExecuteCdpCommand("Network.setCookie", new Dictionary<string, object?>
-                    {
-                        ["name"] = name,
-                        ["value"] = "true",
-                        ["domain"] = ".epam.com",
-                        ["path"] = "/"
-                    });
-                }
-                Logger.Information("OneTrust cookies dismissed");
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.Warning(ex, "DismissOneTrust failed");
-        }
+        Locators_for_Web_Elements.Core.BrowserFactory.DismissOneTrustCookies(Driver);
+        Logger.Information("OneTrust cookies dismissed");
     }
 }

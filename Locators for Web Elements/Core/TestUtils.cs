@@ -1,0 +1,43 @@
+using System.IO;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
+using Serilog;
+
+namespace Locators_for_Web_Elements.Core;
+
+public static class TestUtils
+{
+    public static void TakeScreenshot(IWebDriver driver, ILogger logger, string testName, string testClassName)
+    {
+        try
+        {
+            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
+            var screenshotDir = Path.Combine("Screenshots", testClassName);
+            Directory.CreateDirectory(screenshotDir);
+            var filePath = Path.Combine(screenshotDir, $"{testName}_{timestamp}.png");
+
+            if (driver is ITakesScreenshot screenshotDriver)
+            {
+                var screenshot = screenshotDriver.GetScreenshot();
+                screenshot.SaveAsFile(filePath);
+                logger.Information("Screenshot saved: {FilePath}", filePath);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, "Failed to capture screenshot for test: {TestName}", testName);
+        }
+    }
+
+    public static string WaitForFileDownload(IWebDriver driver, ILogger logger, string downloadPath, string partialFileName, int timeoutSeconds = 30)
+    {
+        logger.Information("Waiting for file download: {FileName}", partialFileName);
+        var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(timeoutSeconds));
+        return wait.Until(d =>
+        {
+            var file = Directory.GetFiles(downloadPath)
+                .FirstOrDefault(f => Path.GetFileName(f).Contains(partialFileName));
+            return file;
+        })!;
+    }
+}
