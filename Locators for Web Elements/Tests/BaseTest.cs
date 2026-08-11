@@ -8,22 +8,19 @@ using System.Threading.Tasks;
 using Xunit;
 using Locators_for_Web_Elements.Core;
 
+[assembly: AssemblyFixture(typeof(Locators_for_Web_Elements.Tests.TestEnvironmentFixture))]
 namespace Locators_for_Web_Elements.Tests;
 
-public abstract class BaseTest : IAsyncLifetime
+public sealed class TestEnvironmentFixture : IDisposable
 {
-    protected IWebDriver Driver { get; private set; } = null!;
-    protected WebDriverWait Wait { get; private set; } = null!;
-    protected ILogger Logger { get; }
-    protected TestSettings Settings { get; }
-    protected string DownloadPath { get; private set; } = null!;
+    public static TestEnvironmentFixture Instance { get; private set; } = null!;
 
-    protected BaseTest()
+    public TestSettings Settings { get; }
+    public string DownloadPath { get; }
+
+    public TestEnvironmentFixture()
     {
-        Logger = Log.ForContext(GetType());
-
         var environment = Environment.GetEnvironmentVariable("TAF_ENVIRONMENT") ?? "Production";
-
         var config = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("Tests/config.json", optional: false)
@@ -36,9 +33,36 @@ public abstract class BaseTest : IAsyncLifetime
         DownloadPath = Path.Combine(Path.GetTempPath(), Settings.DownloadPath ?? "epam-downloads");
         Directory.CreateDirectory(DownloadPath);
 
-        if (!LoggingManager.Instance.IsInitialized)
-            LoggingManager.Instance.Initialize(Settings.Logging);
+        LoggingManager.Instance.Initialize(Settings.Logging);
 
+        Instance = this;
+    }
+
+    public void Dispose()
+    {
+        Log.CloseAndFlush();
+    }
+}
+
+public abstract class BaseTest : IAsyncLifetime
+{
+    protected IWebDriver Driver { get; private set; } = null!;
+    protected WebDriverWait Wait { get; private set; } = null!;
+    protected ILogger Logger { get; }
+    protected TestSettings Settings { get; }
+    protected string DownloadPath { get; }
+
+    protected BaseTest()
+    {
+        var environment = TestEnvironmentFixture.Instance
+            ?? throw new InvalidOperationException(
+                $"{nameof(TestEnvironmentFixture)} was not initialized. " +
+                "Check that the [assembly: AssemblyFixture(...)] attribute is present.");
+
+        Settings = environment.Settings;
+        DownloadPath = environment.DownloadPath;
+
+        Logger = Log.ForContext(GetType());
         Logger.Information("Starting test class: {TestClass}", GetType().Name);
         Logger.Information("Initializing browser: {Browser}", Settings.Browser);
     }
@@ -78,12 +102,7 @@ public abstract class BaseTest : IAsyncLifetime
         {
             Logger.Error(ex, "Error during browser cleanup");
         }
-        finally
-        {
-            Log.CloseAndFlush();
-        }
 
         return ValueTask.CompletedTask;
     }
-
 }
