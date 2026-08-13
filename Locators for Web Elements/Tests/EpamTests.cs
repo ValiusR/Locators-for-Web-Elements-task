@@ -21,7 +21,7 @@ public class EpamTests : BaseTest
         careersPage.EnterKeyword(keyword);
         careersPage.EnableFilter("Remote");
         careersPage.WaitForPreloaderToDisappear();
-        careersPage.SubmitSearch();
+        careersPage.SubmitSearch(keyword);
         careersPage.ClickLastJobCard();
 
         string pageText = careersPage.GetPageBodyText();

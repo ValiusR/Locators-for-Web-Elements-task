@@ -7,6 +7,31 @@ namespace Locators_for_Web_Elements.Core;
 
 public static class TestUtils
 {
+    public static string SanitizeFileName(string value)
+    {
+        var invalidChars = Path.GetInvalidFileNameChars();
+        var normalized = value
+            .Replace('/', '-')
+            .Replace('\\', '-')
+            .Replace(':', '-')
+            .Replace('*', '-')
+            .Replace('?', '-')
+            .Replace('"', '-')
+            .Replace('<', '-')
+            .Replace('>', '-')
+            .Replace('|', '-');
+
+        foreach (var invalidChar in invalidChars)
+        {
+            normalized = normalized.Replace(invalidChar, '-');
+        }
+
+        normalized = normalized.Trim();
+        normalized = string.IsNullOrWhiteSpace(normalized) ? "unnamed_test" : normalized;
+
+        return normalized;
+    }
+
     public static void TakeScreenshot(IWebDriver driver, ILogger logger, string testName, string testClassName)
     {
         try
@@ -14,7 +39,8 @@ public static class TestUtils
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
             var screenshotDir = Path.Combine("Screenshots", testClassName);
             Directory.CreateDirectory(screenshotDir);
-            var filePath = Path.Combine(screenshotDir, $"{testName}_{timestamp}.png");
+            var safeTestName = SanitizeFileName(testName);
+            var filePath = Path.Combine(screenshotDir, $"{safeTestName}_{timestamp}.png");
 
             if (driver is ITakesScreenshot screenshotDriver)
             {

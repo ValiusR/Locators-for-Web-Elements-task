@@ -13,6 +13,42 @@ public class EpamHomePage : BasePage
         Driver.Navigate().GoToUrl(baseUrl);
     }
 
+    public void HoverServicesMenu()
+    {
+        Logger.Information("Hovering over Services menu");
+
+        var servicesLink = Wait.Until(_ =>
+            Driver.FindElements(By.CssSelector("a.top-navigation__item-link.js-op"))
+                .FirstOrDefault(link => string.Equals(link.Text, "Services", StringComparison.OrdinalIgnoreCase)));
+
+        if (servicesLink == null)
+        {
+            throw new NoSuchElementException("Services link was not found in the main navigation.");
+        }
+
+        Actions.MoveToElement(servicesLink).Perform();
+
+        Wait.Until(_ => Driver.FindElements(By.CssSelector("a.top-navigation__sub-link"))
+            .Any(link => link.Displayed && link.Text.Contains("AI", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    public void SelectServiceCategory(string category)
+    {
+        Logger.Information("Selecting service category: {Category}", category);
+
+        var serviceLink = Wait.Until(_ =>
+            Driver.FindElements(By.CssSelector("a.top-navigation__sub-link"))
+                .FirstOrDefault(link =>
+                    string.Equals(link.Text.Trim(), category, StringComparison.OrdinalIgnoreCase)));
+
+        if (serviceLink == null)
+        {
+            throw new NoSuchElementException($"Service category '{category}' was not found in the Services dropdown.");
+        }
+
+        serviceLink.Click();
+    }
+
     public void ClickCareersLink()
     {
         Logger.Information("Clicking Careers link");

@@ -29,7 +29,7 @@ public class CareersSearchPage : BasePage
         Wait.Until(d =>
         {
             var preloaders = d.FindElements(By.CssSelector("[class^='Preloader_fullSize']"));
-            return preloaders.Count == 0 || !preloaders[0].Displayed;
+            return preloaders.Count == 0 || preloaders.All(p => !p.Displayed);
         });
     }
 
@@ -47,13 +47,39 @@ public class CareersSearchPage : BasePage
         Wait.Until(d => d.FindElement(By.CssSelector("label[for^='checkbox-vacancy_type-" + filterName + "']:not([disabled])"))).Click();
     }
 
-    public void SubmitSearch()
+    public void SubmitSearch(string? keyword = null)
     {
         Logger.Information("Submitting search");
         var searchButton = Driver.FindElement(By.Name("submit_search_box_button"));
         var urlBefore = Driver.Url;
         searchButton.Click();
         Wait.Until(d => d.Url != urlBefore);
+
+        Logger.Information("Waiting for search results readiness");
+        Wait.Until(d =>
+        {
+            var links = d.FindElements(By.CssSelector("a[data-testid='job-card-link']"));
+            var visibleEnabledLinks = links.Where(l => l.Displayed && l.Enabled).ToList();
+            return visibleEnabledLinks.Count > 0;
+        });
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            try
+            {
+                var keywordWait = new WebDriverWait(Driver, TimeSpan.FromSeconds(5));
+                keywordWait.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
+                keywordWait.Until(d =>
+                {
+                    var cards = d.FindElements(By.CssSelector("[data-testid='accordion-section-container']"));
+                    return cards.Any(c => c.Text.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+                });
+            }
+            catch (WebDriverTimeoutException)
+            {
+                Logger.Warning("Search results are ready but no job card text contained keyword yet: {Keyword}", keyword);
+            }
+        }
     }
 
     public void ClickLastJobCard()

@@ -3,17 +3,14 @@ using Microsoft.Extensions.Configuration;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Serilog;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 using Locators_for_Web_Elements.Core;
 
-[assembly: AssemblyFixture(typeof(Locators_for_Web_Elements.Tests.TestEnvironmentFixture))]
 namespace Locators_for_Web_Elements.Tests;
 
 public sealed class TestEnvironmentFixture : IDisposable
 {
-    public static TestEnvironmentFixture Instance { get; private set; } = null!;
+    public static TestEnvironmentFixture Instance { get; private set; } = new();
 
     public TestSettings Settings { get; }
     public string DownloadPath { get; }
@@ -34,8 +31,6 @@ public sealed class TestEnvironmentFixture : IDisposable
         Directory.CreateDirectory(DownloadPath);
 
         LoggingManager.Instance.Initialize(Settings.Logging);
-
-        Instance = this;
     }
 
     public void Dispose()
@@ -54,10 +49,7 @@ public abstract class BaseTest : IAsyncLifetime
 
     protected BaseTest()
     {
-        var environment = TestEnvironmentFixture.Instance
-            ?? throw new InvalidOperationException(
-                $"{nameof(TestEnvironmentFixture)} was not initialized. " +
-                "Check that the [assembly: AssemblyFixture(...)] attribute is present.");
+        var environment = TestEnvironmentFixture.Instance;
 
         Settings = environment.Settings;
         DownloadPath = environment.DownloadPath;
@@ -79,22 +71,31 @@ public abstract class BaseTest : IAsyncLifetime
         Logger.Information("Navigating to base URL: {BaseUrl}", Settings.BaseUrl);
         Driver.Navigate().GoToUrl(Settings.BaseUrl);
 
+        BrowserFactory.DismissOneTrustCookies(Driver);
+        var js = (IJavaScriptExecutor)Driver;
+        js.ExecuteScript(@"
+            const banner = document.getElementById('onetrust-banner-sdk');
+            if (banner) { banner.style.display = 'none'; }
+            const backdrop = document.getElementById('onetrust-pc-sdk');
+            if (backdrop) { backdrop.style.display = 'none'; }
+        ");
+
         return ValueTask.CompletedTask;
     }
 
     public ValueTask DisposeAsync()
     {
-        var state = TestContext.Current.TestState;
-        if (state?.Result == TestResult.Failed)
-        {
-            var testName = TestContext.Current.Test?.TestDisplayName ?? "UnknownTest";
-            var message = state.ExceptionMessages?.FirstOrDefault();
-            Logger.Error("Test '{TestName}' failed: {Message}", testName, message);
-            Core.TestUtils.TakeScreenshot(Driver, Logger, testName, GetType().Name);
-        }
-
         try
         {
+            var state = TestContext.Current?.TestState;
+            if (state?.Result == TestResult.Failed)
+            {
+                var testName = TestContext.Current?.Test?.TestDisplayName ?? "UnknownTest";
+                var message = state.ExceptionMessages?.FirstOrDefault();
+                Logger.Error("Test '{TestName}' failed: {Message}", testName, message);
+                Core.TestUtils.TakeScreenshot(Driver, Logger, testName, GetType().Name);
+            }
+
             Logger.Information("Closing browser");
             Driver?.Quit();
         }

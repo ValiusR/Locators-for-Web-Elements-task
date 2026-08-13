@@ -26,10 +26,14 @@ public static class BrowserFactory
     private static ChromeOptions CreateChromeOptions(string downloadPath)
     {
         var options = new ChromeOptions();
-        var userDataDir = Path.Combine(Path.GetTempPath(), "epam-chrome-profile");
+        var userDataDir = Path.Combine(Path.GetTempPath(), $"epam-chrome-profile-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(userDataDir);
 
         options.AddArgument($"--user-data-dir={userDataDir}");
         options.AddArgument("--disable-infobars");
+        options.AddArgument("--disable-dev-shm-usage");
+        options.AddArgument("--no-sandbox");
+        options.AddArgument("--disable-gpu");
         options.AddUserProfilePreference("intl.accept_languages", "en-US");
         options.AddUserProfilePreference("download.prompt_for_download", false);
         options.AddUserProfilePreference("download.default_directory", downloadPath);
