@@ -1,6 +1,7 @@
 using OpenQA.Selenium;
 using Reqnroll;
 using Locators_for_Web_Elements.Business;
+using Locators_for_Web_Elements.Core;
 
 namespace Locators_for_Web_Elements.Tests.StepDefinitions;
 
@@ -31,14 +32,14 @@ public sealed class ServicesNavigationSteps
     [When("I select the \"(.*)\" service category from the dropdown")]
     public void WhenISelectTheServiceCategoryFromTheDropdown(string category)
     {
-        _context.DismissOneTrustBanner();
+        BrowserFactory.DismissOneTrustCookies(_context.Driver);
         try
         {
             _homePage.SelectServiceCategory(category);
         }
         catch (ElementClickInterceptedException)
         {
-            _context.DismissOneTrustBanner();
+            BrowserFactory.DismissOneTrustCookies(_context.Driver);
             _homePage.SelectServiceCategory(category);
         }
     }

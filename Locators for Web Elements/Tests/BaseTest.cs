@@ -72,13 +72,6 @@ public abstract class BaseTest : IAsyncLifetime
         Driver.Navigate().GoToUrl(Settings.BaseUrl);
 
         BrowserFactory.DismissOneTrustCookies(Driver);
-        var js = (IJavaScriptExecutor)Driver;
-        js.ExecuteScript(@"
-            const banner = document.getElementById('onetrust-banner-sdk');
-            if (banner) { banner.style.display = 'none'; }
-            const backdrop = document.getElementById('onetrust-pc-sdk');
-            if (backdrop) { backdrop.style.display = 'none'; }
-        ");
 
         return ValueTask.CompletedTask;
     }

@@ -26,33 +26,7 @@ public sealed class StepDriverContext : IDisposable
     public void NavigateToHomePage()
     {
         Driver.Navigate().GoToUrl(BaseUrl);
-        DismissOneTrustBanner();
-    }
-
-    public void DismissOneTrustBanner()
-    {
         BrowserFactory.DismissOneTrustCookies(Driver);
-
-        var js = (IJavaScriptExecutor)Driver;
-        js.ExecuteScript(@"
-            const banner = document.getElementById('onetrust-banner-sdk');
-            if (banner) { banner.style.display = 'none'; }
-            const backdrop = document.getElementById('onetrust-pc-sdk');
-            if (backdrop) { backdrop.style.display = 'none'; }
-        ");
-
-        var acceptButton = Driver.FindElements(By.Id("onetrust-accept-btn-handler")).FirstOrDefault();
-        if (acceptButton is { Displayed: true, Enabled: true })
-        {
-            try
-            {
-                acceptButton.Click();
-            }
-            catch
-            {
-                // Ignore and continue with cookie/js based dismissal.
-            }
-        }
     }
 
     public void Dispose()
