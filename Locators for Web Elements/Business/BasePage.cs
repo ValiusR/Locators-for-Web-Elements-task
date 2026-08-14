@@ -22,36 +22,6 @@ public class BasePage
 
         DismissOneTrust();
     }
-
-    public static bool IsOneTrustBannerVisible(IWebDriver driver)
-    {
-        try
-        {
-            var banner = driver.FindElement(By.Id("onetrust-banner-sdk"));
-            if (banner == null)
-            {
-                return false;
-            }
-
-            var display = banner.GetCssValue("display");
-            var visibility = banner.GetCssValue("visibility");
-            var opacity = banner.GetCssValue("opacity");
-
-            return banner.Displayed
-                && !string.Equals(display, "none", StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(visibility, "hidden", StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(opacity, "0", StringComparison.OrdinalIgnoreCase);
-        }
-        catch (NoSuchElementException)
-        {
-            return false;
-        }
-        catch (StaleElementReferenceException)
-        {
-            return false;
-        }
-    }
-
     public void DismissOneTrust()
     {
         Locators_for_Web_Elements.Core.BrowserFactory.DismissOneTrustCookies(Driver);
