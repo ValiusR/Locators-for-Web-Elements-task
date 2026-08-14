@@ -34,7 +34,7 @@ public sealed class CareersSearchSteps
         _careersPage.EnterKeyword(keyword);
         _careersPage.EnableFilter("Remote");
         _careersPage.WaitForPreloaderToDisappear();
-        _careersPage.SubmitSearch(keyword);
+        _careersPage.SubmitSearch();
     }
 
     [When("I open the last job card from the search results")]
