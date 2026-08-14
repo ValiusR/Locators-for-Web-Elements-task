@@ -20,10 +20,7 @@ public class BasePage
         Actions = new Actions(driver);
         Logger = Log.ForContext(GetType());
 
-        if (IsOneTrustBannerVisible(Driver))
-        {
-            DismissOneTrust();
-        }
+        DismissOneTrust();
     }
 
     public static bool IsOneTrustBannerVisible(IWebDriver driver)

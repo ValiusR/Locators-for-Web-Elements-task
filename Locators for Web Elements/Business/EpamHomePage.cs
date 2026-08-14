@@ -97,14 +97,17 @@ public class EpamHomePage : BasePage
         Logger.Information("Scrolling to footer");
         var footer = Wait.Until(d => d.FindElement(By.TagName("footer")));
         Actions.ScrollToElement(footer).Perform();
+        ((IJavaScriptExecutor)Driver).ExecuteScript("window.scrollTo(0, document.body.scrollHeight);");
     }
 
     public void ClickPolicyPdfLink(string fileName)
     {
         Logger.Information("Clicking policy PDF link: {FileName}", fileName);
-        var pdfLink = Wait.Until(d => d.FindElement(By.CssSelector(".policies-right a[href*='" + fileName + "']")));
-        ((IJavaScriptExecutor)Driver).ExecuteScript("arguments[0].scrollIntoView({block: 'center'});", pdfLink);
-        Wait.Until(d => pdfLink.Displayed);
+        var normalizedName = fileName.ToLowerInvariant();
+        var linkLocator = By.XPath($"//footer//a[contains(translate(@href,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'{normalizedName}')]");
+        var pdfLink = Wait.Until(d => d.FindElement(linkLocator));
+        ((IJavaScriptExecutor)Driver).ExecuteScript("arguments[0].scrollIntoView({block: 'end'});", pdfLink);
+        Wait.Until(_ => pdfLink.Displayed && pdfLink.Enabled);
         pdfLink.Click();
     }
 }
