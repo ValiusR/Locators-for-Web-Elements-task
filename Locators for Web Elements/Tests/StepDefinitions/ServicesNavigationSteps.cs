@@ -32,16 +32,7 @@ public sealed class ServicesNavigationSteps
     [When("I select the \"(.*)\" service category from the dropdown")]
     public void WhenISelectTheServiceCategoryFromTheDropdown(string category)
     {
-        BrowserFactory.DismissOneTrustCookies(_context.Driver);
-        try
-        {
-            _homePage.SelectServiceCategory(category);
-        }
-        catch (ElementClickInterceptedException)
-        {
-            BrowserFactory.DismissOneTrustCookies(_context.Driver);
-            _homePage.SelectServiceCategory(category);
-        }
+        _homePage.SelectServiceCategory(category);
     }
 
     [Then("the page title should contain \"(.*)\"")]
