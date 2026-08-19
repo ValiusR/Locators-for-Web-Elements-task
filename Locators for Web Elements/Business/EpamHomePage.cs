@@ -110,4 +110,14 @@ public class EpamHomePage : BasePage
         Wait.Until(_ => pdfLink.Displayed && pdfLink.Enabled);
         pdfLink.Click();
     }
+
+    public bool IsRelatedExpertiseSectionVisible()
+    {
+        Logger.Information("Checking 'Our Related Expertise' section visibility");
+        var section = Wait.Until(_ =>
+            Driver.FindElements(By.XPath("//*[contains(normalize-space(.), 'Our Related Expertise')]"))
+                .FirstOrDefault(el => el.Displayed));
+
+        return section != null;
+    }
 }

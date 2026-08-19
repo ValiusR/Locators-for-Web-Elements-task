@@ -45,10 +45,6 @@ public sealed class ServicesNavigationSteps
     [Then("the \"Our Related Expertise\" section should be displayed")]
     public void ThenTheOurRelatedExpertiseSectionShouldBeDisplayed()
     {
-        var section = _context.Driver.FindElements(By.XPath("//*[contains(normalize-space(.), 'Our Related Expertise')]"))
-            .FirstOrDefault(el => el.Displayed);
-
-        Assert.NotNull(section);
-        Assert.True(section!.Displayed, "The 'Our Related Expertise' section is not visible.");
+        Assert.True(_homePage.IsRelatedExpertiseSectionVisible(), "The 'Our Related Expertise' section is not visible.");
     }
 }
