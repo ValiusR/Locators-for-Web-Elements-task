@@ -160,7 +160,7 @@ this.ScenarioInitialize(scenarioInfo, ruleInfo);
             {
                 await this.ScenarioStartAsync();
 #line 7
-    await testRunner.GivenAsync("I am on the EPAM home page for careers search", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
+    await testRunner.GivenAsync("I am on the EPAM home page", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
 #line 8
     await testRunner.WhenAsync(string.Format("I search jobs for keyword \"{0}\" in country \"{1}\"", keyword, country), ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");

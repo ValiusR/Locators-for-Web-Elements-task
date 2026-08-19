@@ -4,7 +4,7 @@ Feature: Global Search
   So that all displayed results match my search intent
 
 Scenario Outline: Validate global search results contain keyword
-    Given I am on the EPAM home page for global search
+    Given I am on the EPAM home page
     When I run a global search for "<keyword>"
     Then all global search results should contain "<keyword>"
 

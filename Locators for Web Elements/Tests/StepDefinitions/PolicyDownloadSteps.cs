@@ -20,12 +20,6 @@ public sealed class PolicyDownloadSteps
         _logger = Log.ForContext<PolicyDownloadSteps>();
     }
 
-    [Given("I am on the EPAM home page for policy download")]
-    public void GivenIAmOnTheEpamHomePageForPolicyDownload()
-    {
-        _context.NavigateToHomePage();
-    }
-
     [When("I download the policy file containing \"(.*)\"")]
     public void WhenIDownloadThePolicyFileContaining(string partialFileName)
     {

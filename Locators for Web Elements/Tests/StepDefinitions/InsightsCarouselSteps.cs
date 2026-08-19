@@ -17,12 +17,6 @@ public sealed class InsightsCarouselSteps
         _insightsPage = new InsightsPage(_context.Driver);
     }
 
-    [Given("I am on the EPAM home page for insights carousel")]
-    public void GivenIAmOnTheEpamHomePageForInsightsCarousel()
-    {
-        _context.NavigateToHomePage();
-    }
-
     [When("I open Insights and swipe the featured carousel (.*) times")]
     public void WhenIOpenInsightsAndSwipeTheFeaturedCarouselTimes(int swipeCount)
     {

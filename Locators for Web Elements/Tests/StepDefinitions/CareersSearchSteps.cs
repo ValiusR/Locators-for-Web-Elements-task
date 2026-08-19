@@ -18,12 +18,6 @@ public sealed class CareersSearchSteps
         _careersPage = new CareersSearchPage(_context.Driver);
     }
 
-    [Given("I am on the EPAM home page for careers search")]
-    public void GivenIAmOnTheEpamHomePageForCareersSearch()
-    {
-        _context.NavigateToHomePage();
-    }
-
     [When("I search jobs for keyword \"(.*)\" in country \"(.*)\"")]
     public void WhenISearchJobsForKeywordInCountry(string keyword, string country)
     {

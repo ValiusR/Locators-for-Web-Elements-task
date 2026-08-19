@@ -159,7 +159,7 @@ this.ScenarioInitialize(scenarioInfo, ruleInfo);
             {
                 await this.ScenarioStartAsync();
 #line 7
-    await testRunner.GivenAsync("I am on the EPAM home page for insights carousel", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
+    await testRunner.GivenAsync("I am on the EPAM home page", ((string)(null)), ((global::Reqnroll.Table)(null)), "Given ");
 #line hidden
 #line 8
     await testRunner.WhenAsync(string.Format("I open Insights and swipe the featured carousel {0} times", swipeCount), ((string)(null)), ((global::Reqnroll.Table)(null)), "When ");

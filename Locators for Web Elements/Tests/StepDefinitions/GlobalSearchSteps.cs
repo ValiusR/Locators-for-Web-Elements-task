@@ -16,12 +16,6 @@ public sealed class GlobalSearchSteps
         _homePage = new EpamHomePage(_context.Driver);
     }
 
-    [Given("I am on the EPAM home page for global search")]
-    public void GivenIAmOnTheEpamHomePageForGlobalSearch()
-    {
-        _context.NavigateToHomePage();
-    }
-
     [When("I run a global search for \"(.*)\"")]
     public void WhenIRunAGlobalSearchFor(string keyword)
     {

@@ -4,7 +4,7 @@ Feature: Policy Download
   So that I can verify the file is actually downloaded
 
 Scenario Outline: Validate policy PDF download
-    Given I am on the EPAM home page for policy download
+    Given I am on the EPAM home page
     When I download the policy file containing "<partialFileName>"
     Then the downloaded file containing "<partialFileName>" should exist
 

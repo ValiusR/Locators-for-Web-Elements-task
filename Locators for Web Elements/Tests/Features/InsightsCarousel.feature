@@ -4,7 +4,7 @@ Feature: Insights Carousel
   So that I can validate title consistency between card and details page
 
 Scenario Outline: Validate carousel article title matches details page title
-    Given I am on the EPAM home page for insights carousel
+    Given I am on the EPAM home page
     When I open Insights and swipe the featured carousel <swipeCount> times
     And I open the selected featured article details
     Then the opened article title should match the selected carousel article title
