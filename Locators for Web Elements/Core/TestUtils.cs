@@ -34,10 +34,17 @@ public static class TestUtils
 
     public static void TakeScreenshot(IWebDriver driver, ILogger logger, string testName, string testClassName)
     {
+        TakeScreenshot(driver, logger, testName, testClassName, null);
+    }
+
+    public static void TakeScreenshot(IWebDriver driver, ILogger logger, string testName, string testClassName, string? tag)
+    {
         try
         {
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
-            var screenshotDir = Path.Combine("Screenshots", testClassName);
+            var screenshotDir = string.IsNullOrWhiteSpace(tag)
+                ? Path.Combine("Screenshots", testClassName)
+                : Path.Combine("Screenshots", testClassName, tag);
             Directory.CreateDirectory(screenshotDir);
             var safeTestName = SanitizeFileName(testName);
             var filePath = Path.Combine(screenshotDir, $"{safeTestName}_{timestamp}.png");
