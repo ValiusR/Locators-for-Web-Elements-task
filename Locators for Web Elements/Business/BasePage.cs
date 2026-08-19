@@ -19,12 +19,5 @@ public class BasePage
         Wait.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
         Actions = new Actions(driver);
         Logger = Log.ForContext(GetType());
-
-        DismissOneTrust();
-    }
-    public void DismissOneTrust()
-    {
-        Locators_for_Web_Elements.Core.BrowserFactory.DismissOneTrustCookies(Driver);
-        Logger.Information("OneTrust cookies dismissed");
     }
 }

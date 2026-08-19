@@ -58,6 +58,15 @@ public static class BrowserFactory
                     ["path"] = "/"
                 });
             }
+
+            var script = @"
+                if (window.OneTrust !== undefined) {
+                    OneTrust.NoticeCallback = function() {};
+                }
+                localStorage.setItem('OptanonAlertBoxClosed', 'true');
+                localStorage.setItem('onetrust-consent-sent', 'true');
+            ";
+            ((IJavaScriptExecutor)driver).ExecuteScript(script);
         }
     }
 }
