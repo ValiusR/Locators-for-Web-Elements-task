@@ -42,18 +42,7 @@ public sealed class StepDriverContext : IDisposable
 
     public void Dispose()
     {
-        try
-        {
-            Logger.Information("Closing browser for scenario");
-            Driver?.Quit();
-        }
-        catch (Exception ex) when (ex is WebDriverException or InvalidOperationException)
-        {
-            Logger.Warning(ex, "Browser cleanup failed during scenario disposal.");
-        }
-        catch (Exception ex)
-        {
-            Logger.Error(ex, "Unexpected error during browser cleanup");
-        }
+        Logger.Information("Closing browser for scenario");
+        Driver?.Quit();
     }
 }
