@@ -137,7 +137,7 @@ namespace Locators_for_Web_Elements.Tests.Features
         [global::Xunit.TheoryAttribute(DisplayName="Validate policy PDF download")]
         [global::Xunit.TraitAttribute("FeatureTitle", "Policy Download")]
         [global::Xunit.TraitAttribute("Description", "Validate policy PDF download")]
-        [global::Xunit.InlineDataAttribute("Code-Of-Conduct", "0", new string[0])]
+        [global::Xunit.InlineDataAttribute("Code_of_Ethical_Conduct", "0", new string[0])]
         public async global::System.Threading.Tasks.Task ValidatePolicyPDFDownload(string partialFileName, string @__pickleIndex, string[] exampleTags)
         {
             string[] tagsOfScenario = exampleTags;

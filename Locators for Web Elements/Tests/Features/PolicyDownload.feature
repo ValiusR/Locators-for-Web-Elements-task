@@ -10,4 +10,4 @@ Scenario Outline: Validate policy PDF download
 
 Examples:
     | partialFileName |
-    | Code-Of-Conduct |
+    | Code_of_Ethical_Conduct |

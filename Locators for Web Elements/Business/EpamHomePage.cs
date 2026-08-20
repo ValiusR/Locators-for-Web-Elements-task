@@ -1,5 +1,6 @@
 using OpenQA.Selenium;
 using Serilog;
+using System.Threading;
 
 namespace Locators_for_Web_Elements.Business;
 
@@ -97,7 +98,6 @@ public class EpamHomePage : BasePage
         Logger.Information("Scrolling to footer");
         var footer = Wait.Until(d => d.FindElement(By.TagName("footer")));
         Actions.ScrollToElement(footer).Perform();
-        ((IJavaScriptExecutor)Driver).ExecuteScript("window.scrollTo(0, document.body.scrollHeight);");
     }
 
     public void ClickPolicyPdfLink(string fileName)
@@ -107,6 +107,9 @@ public class EpamHomePage : BasePage
         var linkLocator = By.XPath($"//footer//a[contains(translate(@href,'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'{normalizedName}')]");
         var pdfLink = Wait.Until(d => d.FindElement(linkLocator));
         ((IJavaScriptExecutor)Driver).ExecuteScript("arguments[0].scrollIntoView({block: 'end'});", pdfLink);
+        Wait.Until(_ =>
+            ((IJavaScriptExecutor)Driver).ExecuteScript("return document.querySelector('.scroll-infographic-ui-23__scrollable-section[data-sticky-scroll-ended=\"true\"]') !== null;").Equals(true));
+        pdfLink = Wait.Until(d => d.FindElement(linkLocator));
         Wait.Until(_ => pdfLink.Displayed && pdfLink.Enabled);
         pdfLink.Click();
     }
