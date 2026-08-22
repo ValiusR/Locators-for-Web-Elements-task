@@ -3,7 +3,7 @@ using Reqnroll;
 using Locators_for_Web_Elements.Business;
 using Locators_for_Web_Elements.Core;
 
-namespace Locators_for_Web_Elements.Tests.StepDefinitions;
+namespace Locators_for_Web_Elements.User_Behaviour;
 
 [Binding]
 public sealed class ServicesNavigationSteps

@@ -2,8 +2,9 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Serilog;
 using Locators_for_Web_Elements.Core;
+using Locators_for_Web_Elements.Tests;
 
-namespace Locators_for_Web_Elements.Tests.StepDefinitions;
+namespace Locators_for_Web_Elements.User_Behaviour;
 
 public sealed class StepDriverContext : IDisposable
 {

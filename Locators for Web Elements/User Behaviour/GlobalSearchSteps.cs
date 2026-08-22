@@ -1,7 +1,7 @@
 using Reqnroll;
 using Locators_for_Web_Elements.Business;
 
-namespace Locators_for_Web_Elements.Tests.StepDefinitions;
+namespace Locators_for_Web_Elements.User_Behaviour;
 
 [Binding]
 public sealed class GlobalSearchSteps
