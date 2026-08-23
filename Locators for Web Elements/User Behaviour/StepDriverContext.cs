@@ -12,6 +12,7 @@ public sealed class StepDriverContext : IDisposable
     public WebDriverWait Wait { get; }
     public string BaseUrl { get; }
     public string DownloadPath { get; }
+    public string ArtifactsRoot { get; }
     public ILogger Logger { get; }
 
     public StepDriverContext()
@@ -20,10 +21,13 @@ public sealed class StepDriverContext : IDisposable
         DownloadPath = Path.Combine(Path.GetTempPath(), settings.DownloadPath ?? "downloads");
         Directory.CreateDirectory(DownloadPath);
 
-        Logger = Log.ForContext<StepDriverContext>();
-        Logger.Information("Creating WebDriver for scenario");
+        ArtifactsRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", settings.ArtifactsRoot ?? "TestResults/artifacts"));
+        Directory.CreateDirectory(ArtifactsRoot);
 
-        Driver = BrowserFactory.Create(settings.Browser, DownloadPath);
+        Logger = Log.ForContext<StepDriverContext>();
+        Logger.Information("Creating WebDriver for scenario. Artifacts root: {ArtifactsRoot}", ArtifactsRoot);
+
+        Driver = BrowserFactory.Create(settings.Browser, DownloadPath, settings.BrowserOptions);
         Driver.Manage().Window.Maximize();
         Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
 

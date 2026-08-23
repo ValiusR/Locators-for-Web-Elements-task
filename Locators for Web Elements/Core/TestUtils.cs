@@ -32,19 +32,19 @@ public static class TestUtils
         return normalized;
     }
 
-    public static void TakeScreenshot(IWebDriver driver, ILogger logger, string testName, string testClassName)
+    public static void TakeScreenshot(IWebDriver driver, ILogger logger, string testName, string testClassName, string artifactsRoot)
     {
-        TakeScreenshot(driver, logger, testName, testClassName, null);
+        TakeScreenshot(driver, logger, testName, testClassName, null, artifactsRoot);
     }
 
-    public static void TakeScreenshot(IWebDriver driver, ILogger logger, string testName, string testClassName, string? tag)
+    public static void TakeScreenshot(IWebDriver driver, ILogger logger, string testName, string testClassName, string? tag, string artifactsRoot)
     {
         try
         {
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
             var screenshotDir = string.IsNullOrWhiteSpace(tag)
-                ? Path.Combine("Screenshots", testClassName)
-                : Path.Combine("Screenshots", testClassName, tag);
+                ? Path.Combine(artifactsRoot, "Screenshots", testClassName)
+                : Path.Combine(artifactsRoot, "Screenshots", testClassName, tag);
             Directory.CreateDirectory(screenshotDir);
             var safeTestName = SanitizeFileName(testName);
             var filePath = Path.Combine(screenshotDir, $"{safeTestName}_{timestamp}.png");

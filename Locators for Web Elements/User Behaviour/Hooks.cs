@@ -40,7 +40,8 @@ public sealed class TestHooks
                     _context.Driver,
                     _logger,
                     scenarioTitle,
-                    GetType().Assembly.GetName().Name ?? "Tests"
+                    GetType().Assembly.GetName().Name ?? "Tests",
+                    _context.ArtifactsRoot
                 );
             }
             else
