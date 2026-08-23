@@ -1,5 +1,7 @@
 {
   "BaseUrl": "https://www.epam.com/",
+  "ApiBaseUrl": "https://jsonplaceholder.typicode.com",
+  "ApiTimeoutMs": 30000,
   "Browser": "Chrome",
   "Logging": {
     "MinLevel": "Information",
