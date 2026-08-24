@@ -13,7 +13,7 @@ public class ApiTests : ApiBaseTest
     [Fact]
     public async Task Task1_GetAllUsers_Returns200WithRequiredFields()
     {
-        Logger.Information("--- Task1: Validate list of users received successfully ---");
+        Logger.Information("Task1: Validate list of users received successfully");
 
         var builder = new UsersRequestBuilder(Logger);
         var response = await SendAsync(builder.Build());
@@ -46,7 +46,7 @@ public class ApiTests : ApiBaseTest
     [Fact]
     public async Task Task2_GetAllUsers_ResponseHeaderContentTypeIsJsonUtf8()
     {
-        Logger.Information("--- Task2: Validate response Content-Type header ---");
+        Logger.Information("Task2: Validate response Content-Type header");
 
         var builder = new UsersRequestBuilder(Logger);
         var response = await SendAsync(builder.Build());
@@ -64,7 +64,7 @@ public class ApiTests : ApiBaseTest
     [Fact]
     public async Task Task3_GetAllUsers_ValidatesArrayStructureAndUniqueness()
     {
-        Logger.Information("--- Task3: Validate response body structure ---");
+        Logger.Information("Task3: Validate response body structure");
 
         var builder = new UsersRequestBuilder(Logger);
         var response = await SendAsync(builder.Build());
@@ -94,7 +94,7 @@ public class ApiTests : ApiBaseTest
     [Fact]
     public async Task Task4_CreateUser_Returns201WithId()
     {
-        Logger.Information("--- Task4: Validate user can be created ---");
+        Logger.Information("Task4: Validate user can be created");
 
         var newUser = new { name = "Test User", username = "testuser" };
 
@@ -121,7 +121,7 @@ public class ApiTests : ApiBaseTest
     [Fact]
     public async Task Task5_InvalidEndpoint_Returns404()
     {
-        Logger.Information("--- Task5: Validate 404 for non-existent resource ---");
+        Logger.Information("Task5: Validate 404 for non-existent resource");
 
         var request = new RestRequest("invalidendpoint", Method.Get);
         var response = await SendAsync(request);
