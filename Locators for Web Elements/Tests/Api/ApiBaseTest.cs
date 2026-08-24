@@ -52,4 +52,10 @@ public abstract class ApiBaseTest : IAsyncLifetime
         var response = await BaseApiClient.SendAsync(request, ct);
         return response;
     }
+
+    protected async Task<RestResponse<T>> SendAsync<T>(RestRequest request, CancellationToken ct = default)
+    {
+        var response = await BaseApiClient.SendAsync<T>(request, ct);
+        return response;
+    }
 }

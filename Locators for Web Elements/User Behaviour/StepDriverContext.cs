@@ -41,7 +41,7 @@ public sealed class StepDriverContext : IDisposable
     {
         Logger.Information("Navigating to base URL: {BaseUrl}", BaseUrl);
         Driver.Navigate().GoToUrl(BaseUrl);
-        BrowserFactory.DismissOneTrustCookies(Driver);
+        ConsentHelper.DismissOneTrustCookies(Driver);
         Logger.Information("OneTrust cookies dismissed");
     }
 

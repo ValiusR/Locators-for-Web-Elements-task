@@ -16,19 +16,16 @@ public class ApiTests : ApiBaseTest
         Logger.Information("Task1: Validate list of users received successfully");
 
         var builder = new UsersRequestBuilder(Logger);
-        var response = await SendAsync(builder.Build());
+        var response = await SendAsync<List<User>>(builder.Build(), TestContext.Current.CancellationToken);
 
-        Assert.Equal((int)HttpStatusCode.OK, (int)response.StatusCode);
-        Assert.NotNull(response.Content);
-        Assert.NotEmpty(response.Content);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotEmpty(response.Content!);
 
-        var users = JsonSerializer.Deserialize<List<User>>(response.Content!,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var users = response.Data!;
 
-        Assert.NotNull(users);
         Assert.NotEmpty(users);
 
-        foreach (var user in users)
+        Assert.All(users, user =>
         {
             Assert.NotNull(user);
             Assert.False(string.IsNullOrWhiteSpace(user.Name), "User Name should not be empty");
@@ -38,9 +35,7 @@ public class ApiTests : ApiBaseTest
             Assert.False(string.IsNullOrWhiteSpace(user.Phone), "User Phone should not be empty");
             Assert.False(string.IsNullOrWhiteSpace(user.Website), "User Website should not be empty");
             Assert.NotNull(user.Company);
-        }
-
-        Logger.Information("Task1 passed. Users count: {Count}, all required fields validated.", users.Count);
+        });
     }
 
     [Fact]
@@ -49,16 +44,11 @@ public class ApiTests : ApiBaseTest
         Logger.Information("Task2: Validate response Content-Type header");
 
         var builder = new UsersRequestBuilder(Logger);
-        var response = await SendAsync(builder.Build());
+        var response = await SendAsync(builder.Build(), TestContext.Current.CancellationToken);
 
-        Assert.Equal((int)HttpStatusCode.OK, (int)response.StatusCode);
-
-        Assert.False(string.IsNullOrEmpty(response.ContentType),
-            "Content-Type header is missing from response");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         Assert.Equal("application/json", response.ContentType);
-
-        Logger.Information("Task2 passed. Content-Type: {ContentType}", response.ContentType);
     }
 
     [Fact]
@@ -67,29 +57,26 @@ public class ApiTests : ApiBaseTest
         Logger.Information("Task3: Validate response body structure");
 
         var builder = new UsersRequestBuilder(Logger);
-        var response = await SendAsync(builder.Build());
+        var response = await SendAsync<List<User>>(builder.Build(), TestContext.Current.CancellationToken);
 
-        Assert.Equal((int)HttpStatusCode.OK, (int)response.StatusCode);
-        Assert.NotNull(response.Content);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotEmpty(response.Content!);
 
-        var users = JsonSerializer.Deserialize<List<User>>(response.Content!,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var users = response.Data!;
 
-        Assert.NotNull(users);
+        Assert.NotEmpty(users);
         Assert.True(users.Count == 10, "Expected exactly 10 users in the response");
 
         var ids = users.Select(u => u.Id).ToList();
         Assert.True(ids.Distinct().Count() == 10, "All user IDs should be unique");
 
-        foreach (var user in users)
+        Assert.All(users, user =>
         {
             Assert.False(string.IsNullOrWhiteSpace(user.Name), "User Name should not be empty");
             Assert.False(string.IsNullOrWhiteSpace(user.Username), "User Username should not be empty");
             Assert.NotNull(user.Company);
             Assert.False(string.IsNullOrWhiteSpace(user.Company.Name), "User Company.Name should not be empty");
-        }
-
-        Logger.Information("Task3 passed. {Count} users, all unique IDs, all non-empty Name/Username/Company.Name.", users.Count);
+        });
     }
 
     [Fact]
@@ -103,11 +90,10 @@ public class ApiTests : ApiBaseTest
             .WithMethod(Method.Post)
             .AddJsonBody(newUser);
 
-        var response = await SendAsync(builder.Build());
+        var response = await SendAsync(builder.Build(), TestContext.Current.CancellationToken);
 
-        Assert.Equal((int)HttpStatusCode.Created, (int)response.StatusCode);
-        Assert.NotNull(response.Content);
-        Assert.NotEmpty(response.Content);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.NotEmpty(response.Content!);
 
         using var doc = JsonDocument.Parse(response.Content!);
         var root = doc.RootElement;
@@ -115,8 +101,6 @@ public class ApiTests : ApiBaseTest
         Assert.True(root.TryGetProperty("id", out var idProp), "Response should contain 'id' field");
         Assert.True(idProp.ValueKind == JsonValueKind.Number, "'id' should be a number");
         Assert.True(idProp.GetInt32() > 0, "'id' should be greater than 0");
-
-        Logger.Information("Task4 passed. Created user with ID: {Id}", idProp.GetInt32());
     }
 
     [Fact]
@@ -125,10 +109,8 @@ public class ApiTests : ApiBaseTest
         Logger.Information("Task5: Validate 404 for non-existent resource");
 
         var request = new RestRequest("invalidendpoint", Method.Get);
-        var response = await SendAsync(request);
+        var response = await SendAsync(request, TestContext.Current.CancellationToken);
 
-        Assert.Equal((int)HttpStatusCode.NotFound, (int)response.StatusCode);
-
-        Logger.Information("Task5 passed. Received 404 for invalid endpoint.");
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

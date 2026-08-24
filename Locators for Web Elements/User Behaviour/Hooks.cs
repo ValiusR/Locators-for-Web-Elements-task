@@ -21,7 +21,7 @@ public sealed class TestHooks
     public void BeforeScenario(ScenarioContext scenarioContext)
     {
         _context.Logger.Information("Scenario starting: {ScenarioTitle}", scenarioContext.ScenarioInfo.Title);
-        BrowserFactory.DismissOneTrustCookies(_context.Driver);
+        ConsentHelper.DismissOneTrustCookies(_context.Driver);
     }
 
     [AfterScenario]

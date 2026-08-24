@@ -30,6 +30,15 @@ public class BaseApiClient : IDisposable
         return response;
     }
 
+    public async Task<RestResponse<T>> SendAsync<T>(RestRequest request, CancellationToken ct = default)
+    {
+        var url = _restClient.BuildUri(request);
+        _logger.Information("Sending {Method} request to {Url}", request.Method, url);
+        var response = await _restClient.ExecuteAsync<T>(request, ct);
+        _logger.Information("Received status {StatusCode} from {Url}", (int)response.StatusCode, url);
+        return response;
+    }
+
     public void Dispose()
     {
         _restClient.Dispose();
