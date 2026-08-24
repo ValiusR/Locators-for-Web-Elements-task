@@ -85,6 +85,7 @@ public class ApiTests : ApiBaseTest
         {
             Assert.False(string.IsNullOrWhiteSpace(user.Name), "User Name should not be empty");
             Assert.False(string.IsNullOrWhiteSpace(user.Username), "User Username should not be empty");
+            Assert.NotNull(user.Company);
             Assert.False(string.IsNullOrWhiteSpace(user.Company.Name), "User Company.Name should not be empty");
         }
 
