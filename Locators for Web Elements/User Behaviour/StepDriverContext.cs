@@ -21,7 +21,7 @@ public sealed class StepDriverContext : IDisposable
         DownloadPath = Path.Combine(Path.GetTempPath(), settings.DownloadPath ?? "downloads");
         Directory.CreateDirectory(DownloadPath);
 
-        ArtifactsRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", settings.ArtifactsRoot ?? "TestResults/artifacts"));
+        ArtifactsRoot = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), settings.ArtifactsRoot ?? "TestResults/artifacts"));
         Directory.CreateDirectory(ArtifactsRoot);
 
         Logger = Log.ForContext<StepDriverContext>();
