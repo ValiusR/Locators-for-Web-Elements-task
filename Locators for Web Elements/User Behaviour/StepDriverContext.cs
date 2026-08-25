@@ -43,6 +43,15 @@ public sealed class StepDriverContext : IDisposable
         Driver.Navigate().GoToUrl(BaseUrl);
         ConsentHelper.DismissOneTrustCookies(Driver);
         Logger.Information("OneTrust cookies dismissed");
+
+        TestUtils.TakeScreenshot(
+            Driver,
+            Logger,
+            "debug-homepage",
+            GetType().Assembly.GetName().Name ?? "Tests",
+            ArtifactsRoot
+        );
+        Logger.Information("Debug screenshot saved after homepage navigation");
     }
 
     public void Dispose()

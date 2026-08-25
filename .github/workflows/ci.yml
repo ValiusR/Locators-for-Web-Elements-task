@@ -84,7 +84,7 @@ jobs:
         if: always()
         with:
           name: ui-screenshots
-          path: TestResults/artifacts/Screenshots/
+          path: TestResults/artifacts/Screenshots/**/*
           retention-days: 7
 
       - name: Upload logs
