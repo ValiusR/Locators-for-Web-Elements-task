@@ -1,0 +1,26 @@
+{
+  "BaseUrl": "https://www.epam.com/",
+  "ApiBaseUrl": "https://jsonplaceholder.typicode.com",
+  "ApiTimeoutMs": 30000,
+  "Browser": "Chrome",
+  "ArtifactsRoot": "TestResults/artifacts",
+  "Logging": {
+    "MinLevel": "Information",
+    "FilePath": "Logs/epam-taf-.log",
+    "ConsoleOutput": true,
+    "RetainedFileCountLimit": 7
+  },
+  "DownloadPath": "downloads",
+  "BrowserOptions": {
+    "UserDataDir": true,
+    "Language": "en-US",
+    "DownloadPrompt": false,
+    "DirectoryUpgrade": true,
+    "AlwaysOpenPdfExternally": true,
+    "Headless": false,
+    "DisableInfoBars": true,
+    "DisableDevShmUsage": true,
+    "NoSandbox": true,
+    "DisableGpu": true
+  }
+}
