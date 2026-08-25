@@ -10,7 +10,7 @@ on:
       browser:
         description: 'Browser for UI tests'
         required: true
-        default: 'Chrome'
+        default: 'Firefox'
         type: choice
         options:
           - Chrome
@@ -47,7 +47,7 @@ jobs:
         if: always()
         with:
           name: test-logs
-          path: Logs/
+          path: Logs/**/*
           retention-days: 7
 
   ui-tests:
@@ -97,7 +97,7 @@ jobs:
         if: always()
         with:
           name: ui-screenshots
-          path: TestResults/artifacts/Screenshots/**/*
+          path: TestResults/artifacts/debug/Screenshots/**/*
           retention-days: 7
 
       - name: Upload logs
