@@ -27,6 +27,17 @@ public sealed class TestEnvironmentFixture : IDisposable
         Settings = new TestSettings();
         config.Bind(Settings);
 
+        var browserEnv = Environment.GetEnvironmentVariable("BROWSER");
+        if (!string.IsNullOrWhiteSpace(browserEnv))
+        {
+            Settings.Browser = browserEnv;
+        }
+
+        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI")))
+        {
+            Settings.BrowserOptions.Headless = true;
+        }
+
         DownloadPath = Path.Combine(Path.GetTempPath(), Settings.DownloadPath ?? "epam-downloads");
         Directory.CreateDirectory(DownloadPath);
 

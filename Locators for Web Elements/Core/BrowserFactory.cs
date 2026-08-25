@@ -1,6 +1,7 @@
 using System;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Firefox;
 
 namespace Locators_for_Web_Elements.Core;
 
@@ -13,6 +14,7 @@ public static class BrowserFactory
         return browserName switch
         {
             "chrome" => CreateChromeDriver(downloadPath, options),
+            "firefox" => CreateFirefoxDriver(downloadPath, options),
             _ => throw new ArgumentException($"Unsupported browser: {browser}")
         };
     }
@@ -56,5 +58,28 @@ public static class BrowserFactory
         chromeOptions.AddUserProfilePreference("plugins.always_open_pdf_externally", options.AlwaysOpenPdfExternally);
 
         return chromeOptions;
+    }
+
+    private static IWebDriver CreateFirefoxDriver(string downloadPath, BrowserOptions options)
+    {
+        var firefoxOptions = CreateFirefoxOptions(downloadPath, options);
+        var service = FirefoxDriverService.CreateDefaultService();
+        return new FirefoxDriver(service, firefoxOptions);
+    }
+
+    private static FirefoxOptions CreateFirefoxOptions(string downloadPath, BrowserOptions options)
+    {
+        var firefoxOptions = new FirefoxOptions();
+
+        firefoxOptions.SetPreference("intl.accept_languages", options.Language);
+        firefoxOptions.SetPreference("browser.download.folderList", 2);
+        firefoxOptions.SetPreference("browser.download.dir", downloadPath);
+        firefoxOptions.SetPreference("browser.download.prompt_for_download", options.DownloadPrompt);
+        firefoxOptions.SetPreference("pdfjs.disabled", true);
+
+        if (options.Headless)
+            firefoxOptions.AddArgument("-headless");
+
+        return firefoxOptions;
     }
 }
