@@ -44,14 +44,30 @@ public sealed class StepDriverContext : IDisposable
         ConsentHelper.DismissOneTrustCookies(Driver);
         Logger.Information("OneTrust cookies dismissed");
 
+        var debugDir = Path.Combine(ArtifactsRoot, "debug");
+        Directory.CreateDirectory(debugDir);
+
         TestUtils.TakeScreenshot(
             Driver,
             Logger,
-            "debug-homepage",
-            GetType().Assembly.GetName().Name ?? "Tests",
-            ArtifactsRoot
+            "homepage",
+            "debug",
+            debugDir
         );
-        Logger.Information("Debug screenshot saved after homepage navigation");
+
+        try
+        {
+            var pageSource = Driver.PageSource;
+            var sourcePath = Path.Combine(debugDir, $"homepage_{DateTime.Now:yyyyMMdd_HHmmss_fff}.html");
+            File.WriteAllText(sourcePath, pageSource);
+            Logger.Information("Page source saved: {SourcePath}", sourcePath);
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Failed to save page source");
+        }
+
+        Logger.Information("Debug capture saved after homepage navigation");
     }
 
     public void Dispose()
