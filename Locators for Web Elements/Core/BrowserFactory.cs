@@ -45,9 +45,6 @@ public static class BrowserFactory
         if (options.NoSandbox)
             chromeOptions.AddArgument("--no-sandbox");
 
-        if (options.DisableGpu)
-            chromeOptions.AddArgument("--disable-gpu");
-
         if (options.Headless)
             chromeOptions.AddArgument("--headless=new");
 
