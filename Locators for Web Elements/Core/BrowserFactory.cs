@@ -22,12 +22,18 @@ public static class BrowserFactory
     private static IWebDriver CreateChromeDriver(string downloadPath, BrowserOptions options)
     {
         var chromeOptions = CreateChromeOptions(downloadPath, options);
-        return new ChromeDriver(chromeOptions);
+        var service = ChromeDriverService.CreateDefaultService();
+        return new ChromeDriver(service, chromeOptions);
     }
 
     private static ChromeOptions CreateChromeOptions(string downloadPath, BrowserOptions options)
     {
         var chromeOptions = new ChromeOptions();
+
+        chromeOptions.AddExcludedArgument("enable-automation");
+        chromeOptions.AddArgument("--disable-blink-features=AutomationControlled");
+        chromeOptions.AddUserProfilePreference("excludeSwitches", new[] { "enable-automation" });
+        chromeOptions.AddArgument("--start-maximized");
 
         if (options.UserDataDir)
         {
