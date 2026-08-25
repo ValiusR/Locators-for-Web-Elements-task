@@ -55,7 +55,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     env:
-      BROWSER: ${{ github.event.inputs.browser || 'Chrome' }}
+      BROWSER: ${{ github.event.inputs.browser || 'Firefox' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -68,6 +68,11 @@ jobs:
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
+
+      - name: Ensure directories exist
+        run: |
+          mkdir -p Logs
+          mkdir -p TestResults/artifacts
 
       - name: Run UI tests
         run: dotnet test --configuration Release --no-build --filter "Category=UI" --logger "trx;LogFileName=ui-results.trx" --results-directory TestResults/
@@ -92,7 +97,7 @@ jobs:
         if: always()
         with:
           name: ui-screenshots
-          path: TestResults/artifacts/debug/Screenshots/**/*
+          path: TestResults/artifacts/Screenshots/**/*
           retention-days: 7
 
       - name: Upload logs
