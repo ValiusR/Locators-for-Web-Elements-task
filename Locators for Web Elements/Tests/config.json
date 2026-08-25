@@ -17,7 +17,7 @@
     "DownloadPrompt": false,
     "DirectoryUpgrade": true,
     "AlwaysOpenPdfExternally": true,
-    "Headless": true,
+    "Headless": false,
     "DisableInfoBars": true,
     "DisableDevShmUsage": true,
     "NoSandbox": true,
