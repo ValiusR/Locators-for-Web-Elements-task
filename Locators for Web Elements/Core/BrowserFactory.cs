@@ -33,9 +33,9 @@ public static class BrowserFactory
         chromeOptions.AddExcludedArgument("enable-automation");
         chromeOptions.AddArgument("--disable-blink-features=AutomationControlled");
         chromeOptions.AddUserProfilePreference("excludeSwitches", new[] { "enable-automation" });
-        chromeOptions.AddArgument("--start-maximized");
+        chromeOptions.AddArgument("--window-size=1920,1080");
 
-        if (options.UserDataDir)
+        if (options.UserDataDir && !options.Headless)
         {
             var userDataDir = Path.Combine(Path.GetTempPath(), $"epam-chrome-profile-{Guid.NewGuid():N}");
             Directory.CreateDirectory(userDataDir);
