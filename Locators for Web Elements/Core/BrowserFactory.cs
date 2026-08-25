@@ -52,7 +52,11 @@ public static class BrowserFactory
             chromeOptions.AddArgument("--no-sandbox");
 
         if (options.Headless)
-            chromeOptions.AddArgument("--headless=new");
+        {
+            chromeOptions.AddArgument("--headless=old");
+            chromeOptions.AddArgument("--disable-features=VizDisplayCompositor");
+            chromeOptions.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.7922.137 Safari/537.36");
+        }
 
         chromeOptions.AddUserProfilePreference("intl.accept_languages", options.Language);
         chromeOptions.AddUserProfilePreference("download.prompt_for_download", options.DownloadPrompt);
