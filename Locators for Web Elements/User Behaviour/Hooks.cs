@@ -20,7 +20,7 @@ public sealed class TestHooks
     [BeforeScenario]
     public void BeforeScenario(ScenarioContext scenarioContext)
     {
-        _context.Logger.Information("Scenario starting: {ScenarioTitle}", scenarioContext.ScenarioInfo.Name);
+        _context.Logger.Information("Scenario starting: {ScenarioTitle}", scenarioContext.ScenarioInfo.Title);
     }
 
     [AfterScenario]
