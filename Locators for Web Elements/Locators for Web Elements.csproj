@@ -5,6 +5,7 @@
     <RootNamespace>Locators_for_Web_Elements</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <EnableMicrosoftTestingPlatformPackageReference>false</EnableMicrosoftTestingPlatformPackageReference>
   </PropertyGroup>
 
   <ItemGroup>
