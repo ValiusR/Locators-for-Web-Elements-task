@@ -79,6 +79,13 @@ jobs:
           name: ui-test-results
           path: TestResults/
 
+      - name: Upload debug captures
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-debug-captures
+          path: TestResults/artifacts/debug/
+          retention-days: 7
       - name: Upload screenshots
         uses: actions/upload-artifact@v4
         if: always()
