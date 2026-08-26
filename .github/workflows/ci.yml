@@ -36,10 +36,11 @@ jobs:
         run: mkdir -p Logs
 
       - name: Run API tests
-        run: dotnet test --configuration Release --no-build --filter "Category=API" --logger "trx;LogFileName=api-results.trx" --results-directory TestResults/
+        run: dotnet test --configuration Release --no-build --filter "Category=API" --logger "console;verbosity=detailed"
 
       - name: Locate generated log files
         run: find . -type f -name "*.log" -o -name "*.txt"
+
       - name: Upload API logs
         uses: actions/upload-artifact@v4
         if: always()
@@ -57,6 +58,7 @@ jobs:
         with:
           name: api-test-results
           path: TestResults/api-results.trx
+
   ui-tests:
     needs: api-tests
     if: always()
@@ -82,7 +84,7 @@ jobs:
           mkdir -p TestResults/artifacts/debug/Screenshots
 
       - name: Run UI tests
-        run: xvfb-run dotnet test --configuration Release --no-build --filter "Category=UI" --logger "trx;LogFileName=ui-results.trx" --results-directory TestResults/
+        run: xvfb-run dotnet test --configuration Release --no-build --filter "Category=UI" --logger "trx;LogFileName=ui-results.trx" --logger "console;verbosity=detailed" --results-directory TestResults/
 
       - name: Upload UI test results
         uses: actions/upload-artifact@v4
