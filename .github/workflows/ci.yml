@@ -38,6 +38,8 @@ jobs:
       - name: Run API tests
         run: dotnet test --configuration Release --no-build --filter "Category=API" --logger "trx;LogFileName=api-results.trx" --results-directory TestResults/
 
+      - name: Locate generated log files
+        run: find . -type f -name "*.log" -o -name "*.txt"
       - name: Upload API logs
         uses: actions/upload-artifact@v4
         if: always()
