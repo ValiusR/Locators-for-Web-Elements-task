@@ -5,9 +5,20 @@ namespace Locators_for_Web_Elements.Core;
 
 public sealed class LoggingManager
 {
-    private static readonly Lazy<LoggingManager> _instance = new(() => new LoggingManager());
+    private static LoggingManager? _instance;
+    private static readonly object _lock = new();
 
-    public static LoggingManager Instance => _instance.Value;
+    public static LoggingManager Instance
+    {
+        get
+        {
+            lock (_lock)
+            {
+                _instance ??= new LoggingManager();
+                return _instance;
+            }
+        }
+    }
 
     public bool IsInitialized { get; private set; }
 
@@ -15,8 +26,6 @@ public sealed class LoggingManager
 
     public void Initialize(LoggingSettings loggingSettings)
     {
-        if (IsInitialized) return;
-
         var minLevelStr = loggingSettings.MinLevel;
         var filePath = loggingSettings.FilePath;
         var consoleOutput = loggingSettings.ConsoleOutput;

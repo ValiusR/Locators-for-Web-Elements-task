@@ -38,7 +38,6 @@ public sealed class TestEnvironmentFixture : IDisposable
         Directory.CreateDirectory(logsDir);
 
         LoggingManager.Instance.Initialize(Settings.Logging);
-        Log.CloseAndFlush(); // ensure log file is flushed to disk immediately
     }
 
     private static TestSettings LoadSettings(string environment)
