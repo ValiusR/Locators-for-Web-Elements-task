@@ -34,7 +34,7 @@ public sealed class TestEnvironmentFixture : IDisposable
         DownloadPath = Path.Combine(Path.GetTempPath(), Settings.DownloadPath ?? "epam-downloads");
         Directory.CreateDirectory(DownloadPath);
 
-        var logsDir = Path.Combine(AppContext.BaseDirectory, "..", "Logs");
+        var logsDir = Path.Combine(Directory.GetCurrentDirectory(), "Logs");
         Directory.CreateDirectory(logsDir);
 
         LoggingManager.Instance.Initialize(Settings.Logging);

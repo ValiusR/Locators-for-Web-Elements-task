@@ -14,7 +14,6 @@ public sealed class StepDriverContext : IDisposable
     public string DownloadPath { get; }
     public string ArtifactsRoot { get; }
     public ILogger Logger { get; }
-    private readonly string _projectRoot;
 
     public StepDriverContext()
     {
@@ -22,19 +21,7 @@ public sealed class StepDriverContext : IDisposable
         DownloadPath = Path.Combine(Path.GetTempPath(), settings.DownloadPath ?? "downloads");
         Directory.CreateDirectory(DownloadPath);
 
-        var cwd = Directory.GetCurrentDirectory();
-        var configDir = Path.Combine(cwd, "Tests");
-        string projectRoot;
-        if (Directory.Exists(configDir))
-        {
-            projectRoot = cwd;
-        }
-        else
-        {
-            projectRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", ".."));
-        }
-        _projectRoot = projectRoot;
-        ArtifactsRoot = Path.GetFullPath(Path.Combine(_projectRoot, settings.ArtifactsRoot ?? "TestResults/artifacts"));
+        ArtifactsRoot = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), settings.ArtifactsRoot ?? "TestResults/artifacts"));
         Directory.CreateDirectory(ArtifactsRoot);
 
         Logger = Log.ForContext<StepDriverContext>();
@@ -52,7 +39,8 @@ public sealed class StepDriverContext : IDisposable
 
     public void NavigateToHomePage()
     {
-        Console.WriteLine($"[DEBUG] CWD={Directory.GetCurrentDirectory()} ArtifactsRoot={ArtifactsRoot}");
+        var cwd = Directory.GetCurrentDirectory();
+        Console.WriteLine($"[DEBUG] CWD={cwd} ArtifactsRoot={ArtifactsRoot}");
         Logger.Information("Navigating to base URL: {BaseUrl}", BaseUrl);
         Driver.Navigate().GoToUrl(BaseUrl);
         ConsentHelper.DismissOneTrustCookies(Driver);
@@ -62,7 +50,7 @@ public sealed class StepDriverContext : IDisposable
         {
             var debugInfo = string.Join("\n", new[]
             {
-                $"CWD={Directory.GetCurrentDirectory()}",
+                $"CWD={cwd}",
                 $"ArtifactsRoot={ArtifactsRoot}",
                 $"BaseUrl={BaseUrl}",
                 $"Browser={TestEnvironmentFixture.Instance.Settings.Browser}",
@@ -71,7 +59,7 @@ public sealed class StepDriverContext : IDisposable
                 $"PageTitle={Driver.Title}",
                 $"PageSourceLength={Driver.PageSource.Length}"
             });
-            var debugPath = Path.Combine(_projectRoot, "TestResults", "debug-info.txt");
+            var debugPath = Path.Combine(cwd, "TestResults", "debug-info.txt");
             File.WriteAllText(debugPath, debugInfo);
             Logger.Information("Debug info written: {Path}", debugPath);
         }
