@@ -14,7 +14,7 @@ public sealed class StepDriverContext : IDisposable
     public string DownloadPath { get; }
     public string ArtifactsRoot { get; }
     public ILogger Logger { get; }
-    private readonly string _repoRoot;
+    private readonly string _projectRoot;
 
     public StepDriverContext()
     {
@@ -22,8 +22,8 @@ public sealed class StepDriverContext : IDisposable
         DownloadPath = Path.Combine(Path.GetTempPath(), settings.DownloadPath ?? "downloads");
         Directory.CreateDirectory(DownloadPath);
 
-        _repoRoot = Environment.GetEnvironmentVariable("GITHUB_WORKSPACE") ?? Directory.GetCurrentDirectory();
-        ArtifactsRoot = Path.GetFullPath(Path.Combine(_repoRoot, settings.ArtifactsRoot ?? "TestResults/artifacts"));
+        _projectRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", ".."));
+        ArtifactsRoot = Path.GetFullPath(Path.Combine(_projectRoot, settings.ArtifactsRoot ?? "TestResults/artifacts"));
         Directory.CreateDirectory(ArtifactsRoot);
 
         Logger = Log.ForContext<StepDriverContext>();
@@ -60,7 +60,7 @@ public sealed class StepDriverContext : IDisposable
                 $"PageTitle={Driver.Title}",
                 $"PageSourceLength={Driver.PageSource.Length}"
             });
-            var debugPath = Path.Combine(_repoRoot, "TestResults", "debug-info.txt");
+            var debugPath = Path.Combine(_projectRoot, "TestResults", "debug-info.txt");
             File.WriteAllText(debugPath, debugInfo);
             Logger.Information("Debug info written: {Path}", debugPath);
         }

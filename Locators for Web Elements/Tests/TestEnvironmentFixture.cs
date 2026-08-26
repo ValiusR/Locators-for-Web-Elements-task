@@ -18,10 +18,9 @@ public sealed class TestEnvironmentFixture : IDisposable
     public TestEnvironmentFixture()
     {
         var environment = Environment.GetEnvironmentVariable("TAF_ENVIRONMENT") ?? "Production";
-        var repoRoot = Environment.GetEnvironmentVariable("GITHUB_WORKSPACE") ?? Directory.GetCurrentDirectory();
-
+        var projectRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", ".."));
         var config = new ConfigurationBuilder()
-            .SetBasePath(repoRoot)
+            .SetBasePath(projectRoot)
             .AddJsonFile("Tests/config.json", optional: false)
             .AddJsonFile($"Tests/config.{environment}.json", optional: true)
             .Build();
@@ -43,7 +42,7 @@ public sealed class TestEnvironmentFixture : IDisposable
         DownloadPath = Path.Combine(Path.GetTempPath(), Settings.DownloadPath ?? "epam-downloads");
         Directory.CreateDirectory(DownloadPath);
 
-        var logsDir = Path.GetFullPath(Path.Combine(repoRoot, "Logs"));
+        var logsDir = Path.GetFullPath(Path.Combine(projectRoot, "Logs"));
         Directory.CreateDirectory(logsDir);
 
         LoggingManager.Instance.Initialize(Settings.Logging);
