@@ -18,7 +18,7 @@ public sealed class TestEnvironmentFixture : IDisposable
     public TestEnvironmentFixture()
     {
         var environment = Environment.GetEnvironmentVariable("TAF_ENVIRONMENT") ?? "Production";
-        var projectRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", ".."));
+        var projectRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, ".."));
         var config = new ConfigurationBuilder()
             .SetBasePath(projectRoot)
             .AddJsonFile("Tests/config.json", optional: false)
