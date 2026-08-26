@@ -45,6 +45,28 @@ public sealed class StepDriverContext : IDisposable
         ConsentHelper.DismissOneTrustCookies(Driver);
         Logger.Information("OneTrust cookies dismissed");
 
+        try
+        {
+            var debugInfo = string.Join("\n", new[]
+            {
+                $"CWD={Directory.GetCurrentDirectory()}",
+                $"ArtifactsRoot={ArtifactsRoot}",
+                $"BaseUrl={BaseUrl}",
+                $"Browser={TestEnvironmentFixture.Instance.Settings.Browser}",
+                $"Headless={TestEnvironmentFixture.Instance.Settings.BrowserOptions.Headless}",
+                $"PageUrl={Driver.Url}",
+                $"PageTitle={Driver.Title}",
+                $"PageSourceLength={Driver.PageSource.Length}"
+            });
+            var debugPath = Path.Combine(Directory.GetCurrentDirectory(), "TestResults", "debug-info.txt");
+            File.WriteAllText(debugPath, debugInfo);
+            Logger.Information("Debug info written: {Path}", debugPath);
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "Failed to write debug info");
+        }
+
         var debugDir = Path.Combine(ArtifactsRoot, "debug");
         Directory.CreateDirectory(debugDir);
 
