@@ -40,7 +40,33 @@ public sealed class StepDriverContext : IDisposable
     public void NavigateToHomePage()
     {
         var cwd = Directory.GetCurrentDirectory();
-        Console.WriteLine($"[DEBUG] CWD={cwd} ArtifactsRoot={ArtifactsRoot}");
+        var settings = TestEnvironmentFixture.Instance.Settings;
+
+        // Write debug-info.txt BEFORE navigation so it's always captured,
+        // even if navigation or element lookup fails later
+        try
+        {
+            var debugInfo = string.Join("\n", new[]
+            {
+                $"CWD={cwd}",
+                $"ArtifactsRoot={ArtifactsRoot}",
+                $"BaseUrl={BaseUrl}",
+                $"Browser={settings.Browser}",
+                $"Headless={settings.BrowserOptions.Headless}",
+                $"PageUrl=(not yet navigated)",
+                $"PageTitle=(not yet navigated)",
+                $"PageSourceLength=0"
+            });
+            var debugPath = Path.Combine(cwd, "TestResults", "debug-info.txt");
+            File.WriteAllText(debugPath, debugInfo);
+            Trace.WriteLine($"[DEBUG] Pre-navigation info written: {debugPath}");
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"[DEBUG] Failed to write pre-navigation debug info: {ex.Message}");
+        }
+
+        Trace.WriteLine($"[DEBUG] CWD={cwd} ArtifactsRoot={ArtifactsRoot}");
         Logger.Information("Navigating to base URL: {BaseUrl}", BaseUrl);
         Driver.Navigate().GoToUrl(BaseUrl);
         ConsentHelper.DismissOneTrustCookies(Driver);
@@ -53,18 +79,20 @@ public sealed class StepDriverContext : IDisposable
                 $"CWD={cwd}",
                 $"ArtifactsRoot={ArtifactsRoot}",
                 $"BaseUrl={BaseUrl}",
-                $"Browser={TestEnvironmentFixture.Instance.Settings.Browser}",
-                $"Headless={TestEnvironmentFixture.Instance.Settings.BrowserOptions.Headless}",
+                $"Browser={settings.Browser}",
+                $"Headless={settings.BrowserOptions.Headless}",
                 $"PageUrl={Driver.Url}",
                 $"PageTitle={Driver.Title}",
                 $"PageSourceLength={Driver.PageSource.Length}"
             });
             var debugPath = Path.Combine(cwd, "TestResults", "debug-info.txt");
             File.WriteAllText(debugPath, debugInfo);
+            Trace.WriteLine($"[DEBUG] Post-navigation info written: {debugPath}");
             Logger.Information("Debug info written: {Path}", debugPath);
         }
         catch (Exception ex)
         {
+            Trace.WriteLine($"[DEBUG] Failed to write post-navigation debug info: {ex.Message}");
             Logger.Error(ex, "Failed to write debug info");
         }
 
@@ -84,10 +112,12 @@ public sealed class StepDriverContext : IDisposable
             var pageSource = Driver.PageSource;
             var sourcePath = Path.Combine(debugDir, $"homepage_{DateTime.Now:yyyyMMdd_HHmmss_fff}.html");
             File.WriteAllText(sourcePath, pageSource);
+            Trace.WriteLine($"[DEBUG] Page source saved: {sourcePath}");
             Logger.Information("Page source saved: {SourcePath}", sourcePath);
         }
         catch (Exception ex)
         {
+            Trace.WriteLine($"[DEBUG] Failed to save page source: {ex.Message}");
             Logger.Error(ex, "Failed to save page source");
         }
 
