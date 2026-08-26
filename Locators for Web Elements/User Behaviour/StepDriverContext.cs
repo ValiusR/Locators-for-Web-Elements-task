@@ -39,6 +39,7 @@ public sealed class StepDriverContext : IDisposable
 
     public void NavigateToHomePage()
     {
+        Console.WriteLine($"[DEBUG] CWD={Directory.GetCurrentDirectory()} ArtifactsRoot={ArtifactsRoot}");
         Logger.Information("Navigating to base URL: {BaseUrl}", BaseUrl);
         Driver.Navigate().GoToUrl(BaseUrl);
         ConsentHelper.DismissOneTrustCookies(Driver);
