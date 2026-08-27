@@ -34,8 +34,16 @@ public static class BrowserFactory
         chromeOptions.AddArgument("--disable-blink-features=AutomationControlled");
         chromeOptions.AddUserProfilePreference("excludeSwitches", new[] { "enable-automation" });
         chromeOptions.AddArgument("--window-size=1920,1080");
+        chromeOptions.AddArgument("--no-sandbox");
+        chromeOptions.AddArgument("--disable-dev-shm-usage");
+        chromeOptions.AddArgument("--disable-browser-side-navigation");
+        chromeOptions.AddArgument("--remote-allow-origins=*");
+        chromeOptions.AddArgument("--disable-extensions");
 
-        if (options.UserDataDir && !options.Headless)
+        if (options.DisableGpu)
+            chromeOptions.AddArgument("--disable-gpu");
+
+        if (options.UserDataDir)
         {
             var userDataDir = Path.Combine(Path.GetTempPath(), $"epam-chrome-profile-{Guid.NewGuid():N}");
             Directory.CreateDirectory(userDataDir);
@@ -45,16 +53,9 @@ public static class BrowserFactory
         if (options.DisableInfoBars)
             chromeOptions.AddArgument("--disable-infobars");
 
-        if (options.DisableDevShmUsage)
-            chromeOptions.AddArgument("--disable-dev-shm-usage");
-
-        if (options.NoSandbox)
-            chromeOptions.AddArgument("--no-sandbox");
-
         if (options.Headless)
         {
-            chromeOptions.AddArgument("--headless=old");
-            chromeOptions.AddArgument("--disable-features=VizDisplayCompositor");
+            chromeOptions.AddArgument("--headless=new");
             chromeOptions.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.7922.137 Safari/537.36");
         }
 
@@ -83,9 +84,20 @@ public static class BrowserFactory
         firefoxOptions.SetPreference("browser.download.dir", downloadPath);
         firefoxOptions.SetPreference("browser.download.prompt_for_download", options.DownloadPrompt);
         firefoxOptions.SetPreference("pdfjs.disabled", true);
+        firefoxOptions.SetPreference("dom.webdriver.enabled", false);
+        firefoxOptions.SetPreference("useAutomationExtension", false);
+        firefoxOptions.SetPreference("general.useragent.override", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.7922.137 Safari/537.36");
+        firefoxOptions.SetPreference("media.peerconnection.enabled", false);
+        firefoxOptions.SetPreference("dom.enable_user_autofill_hints", false);
+        firefoxOptions.SetPreference("browser.aboutHomeSnippets.updateUrl", "");
+        firefoxOptions.SetPreference("browser.newtabpage.activity-stream.improvesearch.topSiteSearchShortcuts.havePinned", "");
 
         if (options.Headless)
+        {
             firefoxOptions.AddArgument("-headless");
+            firefoxOptions.AddArgument("--width=1920");
+            firefoxOptions.AddArgument("--height=1080");
+        }
 
         return firefoxOptions;
     }
