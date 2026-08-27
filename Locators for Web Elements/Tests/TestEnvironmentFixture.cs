@@ -34,11 +34,13 @@ public sealed class TestEnvironmentFixture : IDisposable
         DownloadPath = Path.Combine(Path.GetTempPath(), Settings.DownloadPath ?? "epam-downloads");
         Directory.CreateDirectory(DownloadPath);
 
-        var logsDir = Path.Combine(Directory.GetCurrentDirectory(), "Logs");
-        Directory.CreateDirectory(logsDir);
-
         LoggingManager.Instance.Initialize(Settings.Logging);
+
+        // Guarantee flush even if xUnit process terminates abruptly
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => Log.CloseAndFlush();
     }
+    [CollectionDefinition("TestEnvironment")]
+    public class TestEnvironmentCollection : ICollectionFixture<TestEnvironmentFixture> { }
 
     private static TestSettings LoadSettings(string environment)
     {

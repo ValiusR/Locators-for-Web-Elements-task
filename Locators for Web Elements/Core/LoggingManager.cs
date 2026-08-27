@@ -20,14 +20,24 @@ public sealed class LoggingManager
         }
     }
 
-    public bool IsInitialized { get; private set; }
-
     private LoggingManager() { }
 
     public void Initialize(LoggingSettings loggingSettings)
     {
         var minLevelStr = loggingSettings.MinLevel;
-        var filePath = loggingSettings.FilePath;
+        
+        // Anchor path to AppContext.BaseDirectory
+        var absoluteLogPath = Path.IsPathRooted(loggingSettings.FilePath)
+            ? loggingSettings.FilePath
+            : Path.Combine(AppContext.BaseDirectory, loggingSettings.FilePath);
+
+        // Ensure the destination directory exists
+        var logDir = Path.GetDirectoryName(absoluteLogPath);
+        if (!string.IsNullOrEmpty(logDir))
+        {
+            Directory.CreateDirectory(logDir);
+        }
+
         var consoleOutput = loggingSettings.ConsoleOutput;
         var retainedCount = loggingSettings.RetainedFileCountLimit;
 
@@ -42,13 +52,12 @@ public sealed class LoggingManager
             loggerConfig.WriteTo.Console();
 
         loggerConfig.WriteTo.File(
-            path: filePath,
+            path: absoluteLogPath,
             rollingInterval: RollingInterval.Day,
             retainedFileCountLimit: retainedCount,
             outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff}] [{Level:u3}] {Message:lj}{NewLine}{Exception}"
         );
 
         Log.Logger = loggerConfig.CreateLogger();
-        IsInitialized = true;
     }
 }
