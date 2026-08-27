@@ -36,8 +36,6 @@ public static class BrowserFactory
         chromeOptions.AddArgument("--window-size=1920,1080");
         chromeOptions.AddArgument("--no-sandbox");
         chromeOptions.AddArgument("--disable-dev-shm-usage");
-        chromeOptions.AddArgument("--disable-browser-side-navigation");
-        chromeOptions.AddArgument("--remote-allow-origins=*");
         chromeOptions.AddArgument("--disable-extensions");
 
         if (options.DisableGpu)

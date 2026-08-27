@@ -39,7 +39,6 @@ public sealed class StepDriverContext : IDisposable
     Logger.Information("Creating WebDriver for scenario. Artifacts root: {ArtifactsRoot}", ArtifactsRoot);
 
     Driver = BrowserFactory.Create(settings.Browser, DownloadPath, settings.BrowserOptions);
-    Driver.Manage().Window.Maximize();
     Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
 
     Wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(10));
