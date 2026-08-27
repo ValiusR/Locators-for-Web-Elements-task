@@ -80,7 +80,8 @@ jobs:
 
       - name: Ensure directories exist
         run: |
-          mkdir -p TestResults/artifacts/debug/Screenshots
+          mkdir -p TestResults/artifacts/debug
+          mkdir -p TestResults/artifacts/Screenshots
 
       # Added ShowTestOutput to force console logs
       - name: Run UI tests
@@ -99,6 +100,15 @@ jobs:
         with:
           name: ui-debug-captures
           path: TestResults/artifacts/debug/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload UI screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-screenshots
+          path: TestResults/artifacts/Screenshots/
           if-no-files-found: ignore
           retention-days: 7
 
