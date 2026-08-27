@@ -56,31 +56,6 @@ public sealed class StepDriverContext : IDisposable
         Driver.Navigate().GoToUrl(BaseUrl);
         ConsentHelper.DismissOneTrustCookies(Driver);
         Logger.Information("OneTrust cookies dismissed");
-
-        var debugDir = Path.Combine(ArtifactsRoot, "debug");
-        Directory.CreateDirectory(debugDir);
-
-        if (Driver is ITakesScreenshot screenshotDriver)
-        {
-            var screenshot = screenshotDriver.GetScreenshot();
-            var filePath = Path.Combine(debugDir, $"homepage_{DateTime.Now:yyyyMMdd_HHmmss_fff}.png");
-            screenshot.SaveAsFile(filePath);
-            Logger.Information("Debug screenshot saved: {FilePath}", filePath);
-        }
-
-        try
-        {
-            var pageSource = Driver.PageSource;
-            var sourcePath = Path.Combine(debugDir, $"homepage_{DateTime.Now:yyyyMMdd_HHmmss_fff}.html");
-            File.WriteAllText(sourcePath, pageSource);
-            Logger.Information("Page source saved: {SourcePath}", sourcePath);
-        }
-        catch (Exception ex)
-        {
-            Logger.Error(ex, "Failed to save page source");
-        }
-
-        Logger.Information("Debug capture saved after homepage navigation");
     }
 
     public void Dispose()

@@ -67,7 +67,6 @@ jobs:
 
       - name: Ensure directories exist
         run: |
-          mkdir -p TestResults/artifacts/debug
           mkdir -p TestResults/artifacts/Screenshots
 
       - name: Run UI tests
@@ -79,15 +78,6 @@ jobs:
         with:
           name: ui-test-results
           path: TestResults/ui-results.trx
-
-      - name: Upload debug captures
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: ui-debug-captures
-          path: TestResults/artifacts/debug/
-          if-no-files-found: ignore
-          retention-days: 7
 
       - name: Upload UI screenshots
         uses: actions/upload-artifact@v4
