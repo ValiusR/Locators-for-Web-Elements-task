@@ -13,4 +13,4 @@ Scenario Outline: Validate navigation to a services category
     Examples:
         | category         |
         | Generative AI    |
-#       | Responsible AI   |
+        | Responsible AI   |
