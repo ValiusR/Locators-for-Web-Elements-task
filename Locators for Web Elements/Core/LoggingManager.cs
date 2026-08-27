@@ -30,12 +30,10 @@ public sealed class LoggingManager
 
         var minLevelStr = loggingSettings.MinLevel;
         
-        // Anchor path to AppContext.BaseDirectory
         var absoluteLogPath = Path.IsPathRooted(loggingSettings.FilePath)
             ? loggingSettings.FilePath
             : Path.Combine(AppContext.BaseDirectory, loggingSettings.FilePath);
 
-        // Ensure the destination directory exists
         var logDir = Path.GetDirectoryName(absoluteLogPath);
         if (!string.IsNullOrEmpty(logDir))
         {
