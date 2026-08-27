@@ -15,16 +15,25 @@ public sealed class StepDriverContext : IDisposable
     public string ArtifactsRoot { get; }
     public ILogger Logger { get; }
 
+    private static string GetProjectRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory != null && !Directory.Exists(Path.Combine(directory.FullName, ".git")))
+        {
+            directory = directory.Parent;
+        }
+        return directory?.FullName ?? AppContext.BaseDirectory;
+    }
+
     public StepDriverContext()
     {
-    var settings = TestEnvironmentFixture.Instance.Settings;
-    DownloadPath = Path.Combine(Path.GetTempPath(), settings.DownloadPath ?? "downloads");
-    Directory.CreateDirectory(DownloadPath);
+        var settings = TestEnvironmentFixture.Instance.Settings;
+        DownloadPath = Path.Combine(Path.GetTempPath(), settings.DownloadPath ?? "downloads");
+        Directory.CreateDirectory(DownloadPath);
 
-    // Use AppContext.BaseDirectory for reliable path resolution in CI
-    var baseDir = AppContext.BaseDirectory;
-    ArtifactsRoot = Path.GetFullPath(Path.Combine(baseDir, settings.ArtifactsRoot ?? "TestResults/artifacts"));
-    Directory.CreateDirectory(ArtifactsRoot);
+        var projectRoot = GetProjectRoot();
+        ArtifactsRoot = Path.GetFullPath(Path.Combine(projectRoot, settings.ArtifactsRoot ?? "TestResults/artifacts"));
+        Directory.CreateDirectory(ArtifactsRoot);
 
     Logger = Log.ForContext<StepDriverContext>();
     Logger.Information("Creating WebDriver for scenario. Artifacts root: {ArtifactsRoot}", ArtifactsRoot);
@@ -41,7 +50,7 @@ public sealed class StepDriverContext : IDisposable
 
     public void NavigateToHomePage()
     {
-        var cwd = Directory.GetCurrentDirectory();
+        var projectRoot = GetProjectRoot();
         var settings = TestEnvironmentFixture.Instance.Settings;
 
         // Write debug-info.txt BEFORE navigation so it's always captured,
@@ -50,7 +59,7 @@ public sealed class StepDriverContext : IDisposable
         {
             var debugInfo = string.Join("\n", new[]
             {
-                $"CWD={cwd}",
+                $"CWD={Directory.GetCurrentDirectory()}",
                 $"ArtifactsRoot={ArtifactsRoot}",
                 $"BaseUrl={BaseUrl}",
                 $"Browser={settings.Browser}",
@@ -59,7 +68,7 @@ public sealed class StepDriverContext : IDisposable
                 $"PageTitle=(not yet navigated)",
                 $"PageSourceLength=0"
             });
-            var debugPath = Path.Combine(cwd, "TestResults", "debug-info.txt");
+            var debugPath = Path.Combine(projectRoot, "TestResults", "debug-info.txt");
             File.WriteAllText(debugPath, debugInfo);
             Console.WriteLine($"[DEBUG] Pre-navigation info written: {debugPath}");
         }
@@ -68,7 +77,7 @@ public sealed class StepDriverContext : IDisposable
             Console.WriteLine($"[DEBUG] Failed to write pre-navigation debug info: {ex.Message}");
         }
 
-        Console.WriteLine($"[DEBUG] CWD={cwd} ArtifactsRoot={ArtifactsRoot}");
+        Console.WriteLine($"[DEBUG] CWD={Directory.GetCurrentDirectory()} ArtifactsRoot={ArtifactsRoot}");
         Logger.Information("Navigating to base URL: {BaseUrl}", BaseUrl);
         Driver.Navigate().GoToUrl(BaseUrl);
         ConsentHelper.DismissOneTrustCookies(Driver);
@@ -78,7 +87,7 @@ public sealed class StepDriverContext : IDisposable
         {
             var debugInfo = string.Join("\n", new[]
             {
-                $"CWD={cwd}",
+                $"CWD={Directory.GetCurrentDirectory()}",
                 $"ArtifactsRoot={ArtifactsRoot}",
                 $"BaseUrl={BaseUrl}",
                 $"Browser={settings.Browser}",
@@ -87,7 +96,7 @@ public sealed class StepDriverContext : IDisposable
                 $"PageTitle={Driver.Title}",
                 $"PageSourceLength={Driver.PageSource.Length}"
             });
-            var debugPath = Path.Combine(cwd, "TestResults", "debug-info.txt");
+            var debugPath = Path.Combine(projectRoot, "TestResults", "debug-info.txt");
             File.WriteAllText(debugPath, debugInfo);
             Console.WriteLine($"[DEBUG] Post-navigation info written: {debugPath}");
             Logger.Information("Debug info written: {Path}", debugPath);
@@ -101,13 +110,13 @@ public sealed class StepDriverContext : IDisposable
         var debugDir = Path.Combine(ArtifactsRoot, "debug");
         Directory.CreateDirectory(debugDir);
 
-        TestUtils.TakeScreenshot(
-            Driver,
-            Logger,
-            "homepage",
-            "debug",
-            debugDir
-        );
+        if (Driver is ITakesScreenshot screenshotDriver)
+        {
+            var screenshot = screenshotDriver.GetScreenshot();
+            var filePath = Path.Combine(debugDir, $"homepage_{DateTime.Now:yyyyMMdd_HHmmss_fff}.png");
+            screenshot.SaveAsFile(filePath);
+            Logger.Information("Debug screenshot saved: {FilePath}", filePath);
+        }
 
         try
         {
