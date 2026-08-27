@@ -106,7 +106,7 @@ namespace Locators_for_Web_Elements.Tests.Features
         
         private static global::Reqnroll.Formatters.RuntimeSupport.FeatureLevelCucumberMessages InitializeCucumberMessages()
         {
-            return new global::Reqnroll.Formatters.RuntimeSupport.FeatureLevelCucumberMessages("Tests/Features/ServicesNavigation.feature.ndjson", 4);
+            return new global::Reqnroll.Formatters.RuntimeSupport.FeatureLevelCucumberMessages("Tests/Features/ServicesNavigation.feature.ndjson", 3);
         }
         
         async System.Threading.Tasks.ValueTask Xunit.IAsyncLifetime.InitializeAsync()
@@ -138,7 +138,6 @@ namespace Locators_for_Web_Elements.Tests.Features
         [global::Xunit.TraitAttribute("FeatureTitle", "Services Navigation")]
         [global::Xunit.TraitAttribute("Description", "Validate navigation to a services category")]
         [global::Xunit.InlineDataAttribute("Generative AI", "0", new string[0])]
-        [global::Xunit.InlineDataAttribute("Responsible AI", "1", new string[0])]
         public async global::System.Threading.Tasks.Task ValidateNavigationToAServicesCategory(string category, string @__pickleIndex, string[] exampleTags)
         {
             string[] tagsOfScenario = exampleTags;

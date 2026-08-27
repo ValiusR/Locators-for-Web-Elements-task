@@ -23,7 +23,29 @@ public static class BrowserFactory
     {
         var chromeOptions = CreateChromeOptions(downloadPath, options);
         var service = ChromeDriverService.CreateDefaultService();
-        return new ChromeDriver(service, chromeOptions);
+        var driver = new ChromeDriver(service, chromeOptions);
+
+        ApplyAntiDetectionCdp(driver);
+
+        return driver;
+    }
+
+    private static void ApplyAntiDetectionCdp(IWebDriver driver)
+    {
+        var chromeDriver = driver as ChromeDriver;
+        if (chromeDriver == null) return;
+
+        var script = @"
+            Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+            Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
+            Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
+            window.chrome = { runtime: {} };
+        ";
+
+        chromeDriver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument", new Dictionary<string, object?>
+        {
+            ["source"] = script
+        });
     }
 
     private static ChromeOptions CreateChromeOptions(string downloadPath, BrowserOptions options)
