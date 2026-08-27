@@ -76,7 +76,8 @@ public static class BrowserFactory
         if (options.DisableInfoBars)
             chromeOptions.AddArgument("--disable-infobars");
 
-        if (options.Headless)
+        var isHeadless = options.Headless || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"));
+        if (isHeadless)
         {
             chromeOptions.AddArgument("--headless=new");
             chromeOptions.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.7922.137 Safari/537.36");
@@ -115,7 +116,8 @@ public static class BrowserFactory
         firefoxOptions.SetPreference("browser.aboutHomeSnippets.updateUrl", "");
         firefoxOptions.SetPreference("browser.newtabpage.activity-stream.improvesearch.topSiteSearchShortcuts.havePinned", "");
 
-        if (options.Headless)
+        var isHeadless = options.Headless || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"));
+        if (isHeadless)
         {
             firefoxOptions.AddArgument("-headless");
             firefoxOptions.AddArgument("--width=1920");
