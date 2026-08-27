@@ -18,7 +18,7 @@ on:
 
 jobs:
   api-tests:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -31,18 +31,18 @@ jobs:
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
-        
+      
       - name: Ensure TestResults directory exists
+        shell: bash
         run: mkdir -p TestResults
 
-      # Added TRX logger generation and ShowTestOutput to force console logs
       - name: Run API tests
         run: dotnet test --configuration Release --no-build --filter "Category=API" --logger "trx;LogFileName=api-results.trx" --logger "console;verbosity=detailed" --results-directory TestResults/ -- xUnit.ShowTestOutput=true
 
       - name: Locate generated log files
+        shell: bash
         run: find . -type f -name "*.log"
 
-      # Fixed path to dynamically find the Logs folder buried in /bin/Release/net8.0/
       - name: Upload API logs
         uses: actions/upload-artifact@v4
         if: always()
@@ -62,7 +62,7 @@ jobs:
   ui-tests:
     needs: api-tests
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     env:
       BROWSER: ${{ github.event.inputs.browser || 'Firefox' }}
     steps:
@@ -79,13 +79,13 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Ensure directories exist
+        shell: bash
         run: |
           mkdir -p TestResults/artifacts/debug
           mkdir -p TestResults/artifacts/Screenshots
 
-      # Added ShowTestOutput to force console logs
       - name: Run UI tests
-        run: xvfb-run dotnet test --configuration Release --no-build --filter "Category=UI" --logger "trx;LogFileName=ui-results.trx" --logger "console;verbosity=detailed" --results-directory TestResults/ -- xUnit.ShowTestOutput=true
+        run: dotnet test --configuration Release --no-build --filter "Category=UI" --logger "trx;LogFileName=ui-results.trx" --logger "console;verbosity=detailed" --results-directory TestResults/ -- xUnit.ShowTestOutput=true
 
       - name: Upload UI test results
         uses: actions/upload-artifact@v4
@@ -112,7 +112,6 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      # Fixed path to dynamically find the Logs folder buried in /bin/Release/net8.0/
       - name: Upload UI logs
         uses: actions/upload-artifact@v4
         if: always()

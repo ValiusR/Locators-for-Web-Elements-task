@@ -34,9 +34,6 @@ public static class BrowserFactory
         chromeOptions.AddArgument("--disable-blink-features=AutomationControlled");
         chromeOptions.AddUserProfilePreference("excludeSwitches", new[] { "enable-automation" });
         chromeOptions.AddArgument("--window-size=1920,1080");
-        chromeOptions.AddArgument("--no-sandbox");
-        chromeOptions.AddArgument("--disable-dev-shm-usage");
-        chromeOptions.AddArgument("--disable-extensions");
 
         if (options.DisableGpu)
             chromeOptions.AddArgument("--disable-gpu");
