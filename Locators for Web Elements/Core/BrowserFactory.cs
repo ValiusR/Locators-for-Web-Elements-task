@@ -22,7 +22,8 @@ public static class BrowserFactory
     private static IWebDriver CreateChromeDriver(string downloadPath, BrowserOptions options)
     {
         var chromeOptions = CreateChromeOptions(downloadPath, options);
-        var driver = new ChromeDriver(chromeOptions);
+        var service = ChromeDriverService.CreateDefaultService();
+        var driver = new ChromeDriver(service, chromeOptions);
 
         ApplyAntiDetectionCdp(driver);
 
@@ -58,9 +59,6 @@ public static class BrowserFactory
         chromeOptions.AddArgument("--remote-allow-origins=*");
         chromeOptions.AddArgument("--no-first-run");
         chromeOptions.AddArgument("--disable-search-engine-choice-screen");
-        chromeOptions.AddArgument("--disable-extensions");
-        chromeOptions.AddArgument("--disable-background-networking");
-        chromeOptions.AddArgument("--disable-sync");
 
         if (options.NoSandbox)
             chromeOptions.AddArgument("--no-sandbox");
