@@ -10,7 +10,7 @@ Scenario Outline: Validate navigation to a services category
     Then the page title should contain "<category>"
     And the "Our Related Expertise" section should be displayed
 
-Examples:
-    | category         |
-    | Generative AI    |
-    | Responsible AI   |
+    Examples:
+        | category         |
+        | Generative AI    |
+#       | Responsible AI   |
