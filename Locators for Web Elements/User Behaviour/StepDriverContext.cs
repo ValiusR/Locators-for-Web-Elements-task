@@ -17,24 +17,26 @@ public sealed class StepDriverContext : IDisposable
 
     public StepDriverContext()
     {
-        var settings = TestEnvironmentFixture.Instance.Settings;
-        DownloadPath = Path.Combine(Path.GetTempPath(), settings.DownloadPath ?? "downloads");
-        Directory.CreateDirectory(DownloadPath);
+    var settings = TestEnvironmentFixture.Instance.Settings;
+    DownloadPath = Path.Combine(Path.GetTempPath(), settings.DownloadPath ?? "downloads");
+    Directory.CreateDirectory(DownloadPath);
 
-        ArtifactsRoot = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), settings.ArtifactsRoot ?? "TestResults/artifacts"));
-        Directory.CreateDirectory(ArtifactsRoot);
+    // Use AppContext.BaseDirectory for reliable path resolution in CI
+    var baseDir = AppContext.BaseDirectory;
+    ArtifactsRoot = Path.GetFullPath(Path.Combine(baseDir, settings.ArtifactsRoot ?? "TestResults/artifacts"));
+    Directory.CreateDirectory(ArtifactsRoot);
 
-        Logger = Log.ForContext<StepDriverContext>();
-        Logger.Information("Creating WebDriver for scenario. Artifacts root: {ArtifactsRoot}", ArtifactsRoot);
+    Logger = Log.ForContext<StepDriverContext>();
+    Logger.Information("Creating WebDriver for scenario. Artifacts root: {ArtifactsRoot}", ArtifactsRoot);
 
-        Driver = BrowserFactory.Create(settings.Browser, DownloadPath, settings.BrowserOptions);
-        Driver.Manage().Window.Maximize();
-        Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
+    Driver = BrowserFactory.Create(settings.Browser, DownloadPath, settings.BrowserOptions);
+    Driver.Manage().Window.Maximize();
+    Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
 
-        Wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(10));
-        Wait.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
+    Wait = new WebDriverWait(Driver, TimeSpan.FromSeconds(10));
+    Wait.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
 
-        BaseUrl = settings.BaseUrl;
+    BaseUrl = settings.BaseUrl;
     }
 
     public void NavigateToHomePage()

@@ -6,7 +6,7 @@
   "ArtifactsRoot": "TestResults/artifacts",
   "Logging": {
     "MinLevel": "Information",
-    "FilePath": "Logs/epam-taf-.log",
+    "FilePath": "Logs/epam-taf-{Date}.log",
     "ConsoleOutput": true,
     "RetainedFileCountLimit": 7
   },
