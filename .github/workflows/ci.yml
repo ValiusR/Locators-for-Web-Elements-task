@@ -71,7 +71,7 @@ jobs:
           mkdir -p TestResults/artifacts/Screenshots
 
       - name: Run UI tests
-        run: dotnet test --configuration Release --no-build --filter "Category=UI" --logger "trx;LogFileName=ui-results.trx" --logger "console;verbosity=detailed" --results-directory TestResults/ -- xUnit.ShowTestOutput=true
+        run: dotnet test --configuration Release --no-build --filter "Category=UI" --logger "trx;LogFileName=ui-results.trx" --results-directory TestResults/ -- xUnit.ShowTestOutput=true
 
       - name: Upload UI test results
         uses: actions/upload-artifact@v4

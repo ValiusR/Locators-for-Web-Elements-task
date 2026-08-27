@@ -20,10 +20,14 @@ public sealed class LoggingManager
         }
     }
 
+    public bool IsInitialized { get; private set; }
+
     private LoggingManager() { }
 
     public void Initialize(LoggingSettings loggingSettings)
     {
+        if (IsInitialized) return;
+
         var minLevelStr = loggingSettings.MinLevel;
         
         // Anchor path to AppContext.BaseDirectory
@@ -59,5 +63,7 @@ public sealed class LoggingManager
         );
 
         Log.Logger = loggerConfig.CreateLogger();
+
+        IsInitialized = true;
     }
 }

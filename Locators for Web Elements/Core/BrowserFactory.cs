@@ -60,6 +60,12 @@ public static class BrowserFactory
         if (options.DisableGpu)
             chromeOptions.AddArgument("--disable-gpu");
 
+        if (options.DisableDevShmUsage)
+            chromeOptions.AddArgument("--disable-dev-shm-usage");
+
+        if (options.NoSandbox)
+            chromeOptions.AddArgument("--no-sandbox");
+
         if (options.UserDataDir)
         {
             var userDataDir = Path.Combine(Path.GetTempPath(), $"epam-chrome-profile-{Guid.NewGuid():N}");
