@@ -12,6 +12,4 @@ public class BrowserOptions
     public bool DisableDevShmUsage { get; set; } = true;
     public bool NoSandbox { get; set; } = true;
     public bool DisableGpu { get; set; } = true;
-    public bool NoFirstRun { get; set; } = true;
-    public bool DisableSearchEngineChoiceScreen { get; set; } = true;
 }

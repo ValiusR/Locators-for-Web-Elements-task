@@ -56,15 +56,6 @@ public static class BrowserFactory
         chromeOptions.AddArgument("--disable-blink-features=AutomationControlled");
         chromeOptions.AddUserProfilePreference("excludeSwitches", new[] { "enable-automation" });
         chromeOptions.AddArgument("--window-size=1920,1080");
-        chromeOptions.AddArgument("--remote-allow-origins=*");
-        chromeOptions.AddArgument("--no-first-run");
-        chromeOptions.AddArgument("--disable-search-engine-choice-screen");
-
-        if (options.NoSandbox)
-            chromeOptions.AddArgument("--no-sandbox");
-
-        if (options.DisableDevShmUsage)
-            chromeOptions.AddArgument("--disable-dev-shm-usage");
 
         if (options.DisableGpu)
             chromeOptions.AddArgument("--disable-gpu");
