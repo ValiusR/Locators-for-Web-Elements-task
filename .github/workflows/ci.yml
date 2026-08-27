@@ -27,9 +27,6 @@ jobs:
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
-        
-      - name: Ensure TestResults directory exists
-        run: mkdir -p TestResults
 
       - name: Run API tests
         run: dotnet test --configuration Release --no-build --filter "Category=API" --logger "trx;LogFileName=api-results.trx" --results-directory TestResults/ -- xUnit.ShowTestOutput=true
@@ -64,10 +61,6 @@ jobs:
 
       - name: Build
         run: dotnet build --configuration Release --no-restore
-
-      - name: Ensure directories exist
-        run: |
-          mkdir -p TestResults/artifacts/Screenshots
 
       - name: Run UI tests
         run: dotnet test --configuration Release --no-build --filter "Category=UI" --logger "trx;LogFileName=ui-results.trx" --results-directory TestResults/ -- xUnit.ShowTestOutput=true
